@@ -12,7 +12,12 @@ export function Card({
 }) {
   const Component = as;
   return (
-    <Component className={cn('rounded-2xl border border-white/8 bg-white/[0.045] p-4', className)}>
+    <Component
+      className={cn(
+        'rounded-2xl border border-line bg-surface p-4 shadow-[0_1px_2px_rgba(17,24,39,0.04),0_10px_28px_-24px_rgba(17,24,39,0.4)]',
+        className,
+      )}
+    >
       {children}
     </Component>
   );
@@ -30,10 +35,8 @@ export function SectionTitle({
   return (
     <div className="mb-2.5 flex items-end justify-between gap-3">
       <div className="min-w-0">
-        <h2 className="flex items-center gap-1.5 text-[13px] font-semibold tracking-tight text-slate-200">
-          {title}
-        </h2>
-        {hint ? <p className="mt-0.5 text-[11px] leading-snug text-slate-500">{hint}</p> : null}
+        <h2 className="flex items-center gap-1.5 text-[15.5px] font-bold tracking-tight text-ink">{title}</h2>
+        {hint ? <p className="mt-1 text-[12.5px] leading-snug text-ink-faint">{hint}</p> : null}
       </div>
       {right}
     </div>
@@ -52,17 +55,17 @@ export function Segmented<T extends string>({
   className?: string;
 }) {
   return (
-    <div className={cn('flex rounded-xl border border-white/10 bg-black/25 p-1', className)}>
+    <div className={cn('flex rounded-xl border border-line bg-surface-2 p-1', className)}>
       {options.map((option) => (
         <button
           key={option.value}
           type="button"
           onClick={() => onChange(option.value)}
           className={cn(
-            'flex-1 rounded-lg px-2 py-1.5 text-[13px] font-medium transition-colors',
+            'flex-1 rounded-lg px-2 py-2 text-[14.5px] font-semibold transition-colors',
             value === option.value
-              ? 'bg-gradient-to-b from-gold/90 to-gold-deep/85 text-ink-950 shadow-sm'
-              : 'text-slate-400 active:text-slate-200',
+              ? 'bg-surface text-ink shadow-sm ring-1 ring-line'
+              : 'text-ink-faint active:text-ink',
           )}
         >
           {option.label}
@@ -90,19 +93,21 @@ export function Toggle({
       className="flex w-full items-center justify-between gap-3 text-left"
     >
       <span className="min-w-0">
-        <span className="block text-[13px] font-medium text-slate-200">{label}</span>
-        {description ? <span className="mt-0.5 block text-[11px] leading-snug text-slate-500">{description}</span> : null}
+        <span className="block text-[15px] font-semibold text-ink">{label}</span>
+        {description ? (
+          <span className="mt-1 block text-[12.5px] leading-snug text-ink-faint">{description}</span>
+        ) : null}
       </span>
       <span
         className={cn(
-          'relative h-6 w-10 shrink-0 rounded-full transition-colors',
-          checked ? 'bg-gold/90' : 'bg-white/15',
+          'relative h-6 w-11 shrink-0 rounded-full transition-colors',
+          checked ? 'bg-gold-deep' : 'bg-surface-3 ring-1 ring-inset ring-line-strong',
         )}
       >
         <span
           className={cn(
             'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all',
-            checked ? 'left-[18px]' : 'left-0.5',
+            checked ? 'left-[22px]' : 'left-0.5',
           )}
         />
       </span>
@@ -121,19 +126,19 @@ export function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[11px] font-medium tracking-wide text-slate-400">{label}</span>
+      <span className="mb-1.5 block text-[12.5px] font-semibold tracking-wide text-ink-muted">{label}</span>
       {children}
-      {hint ? <span className="mt-1 block text-[11px] leading-snug text-slate-500">{hint}</span> : null}
+      {hint ? <span className="mt-1 block text-[12px] leading-snug text-ink-faint">{hint}</span> : null}
     </label>
   );
 }
 
 export const inputClass =
-  'w-full rounded-xl border border-white/12 bg-black/30 px-3 py-2.5 text-[14px] text-slate-100 placeholder:text-slate-600 focus:border-gold/60 focus:outline-none focus:ring-2 focus:ring-gold/15';
+  'w-full rounded-xl border border-line bg-surface-2 px-3.5 py-3 text-[16px] text-ink placeholder:text-ink-faint focus:border-gold-deep focus:bg-surface focus:outline-none focus:ring-2 focus:ring-gold/35';
 
 export const selectClass = cn(
   inputClass,
-  "bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2394a3b8%22 stroke-width=%222%22><path d=%22M6 9l6 6 6-6%22/></svg>')] bg-[length:16px] bg-[right_0.7rem_center] bg-no-repeat pr-8",
+  "bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%234b5563%22 stroke-width=%222%22><path d=%22M6 9l6 6 6-6%22/></svg>')] bg-[length:16px] bg-[right_0.75rem_center] bg-no-repeat pr-9",
 );
 
 export function Chip({
@@ -146,15 +151,15 @@ export function Chip({
   className?: string;
 }) {
   const tones = {
-    neutral: 'border-white/10 bg-white/5 text-slate-300',
-    gold: 'border-gold/30 bg-gold/10 text-gold',
-    danger: 'border-rose-400/30 bg-rose-500/10 text-rose-300',
-    ok: 'border-emerald-400/30 bg-emerald-500/10 text-emerald-300',
+    neutral: 'border-line bg-surface-2 text-ink-muted',
+    gold: 'border-gold bg-gold/20 text-gold-ink',
+    danger: 'border-rose-200 bg-rose-50 text-rose-700',
+    ok: 'border-emerald-200 bg-emerald-50 text-emerald-700',
   } as const;
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium',
+        'inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[12px] font-semibold',
         tones[tone],
         className,
       )}
@@ -183,7 +188,7 @@ export function PrimaryButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-gold via-[#f7dfa6] to-gold-deep px-4 py-3 text-[15px] font-semibold text-ink-950 shadow-[0_8px_24px_-10px_rgba(242,208,138,0.7)] transition active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-45',
+        'flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-gold via-[#f2d59b] to-gold-deep px-4 py-3.5 text-[16.5px] font-bold text-on-gold shadow-[0_10px_24px_-14px_rgba(193,145,47,0.8)] transition active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-45',
         className,
       )}
     >
@@ -206,7 +211,7 @@ export function GhostButton({
       type="button"
       onClick={onClick}
       className={cn(
-        'flex items-center justify-center gap-1.5 rounded-xl border border-white/12 bg-white/[0.04] px-3 py-2 text-[13px] font-medium text-slate-200 transition active:scale-[0.985]',
+        'flex items-center justify-center gap-1.5 rounded-xl border border-line bg-surface px-3.5 py-2.5 text-[14px] font-semibold text-ink-soft transition active:scale-[0.985] active:bg-surface-2',
         className,
       )}
     >
@@ -228,15 +233,15 @@ export function Sheet({
 }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/65 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 backdrop-blur-sm">
       <button type="button" aria-label="닫기" onClick={onClose} className="absolute inset-0" />
-      <div className="relative z-10 flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-3xl border border-white/10 bg-ink-900 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
-          <h2 className="text-[15px] font-semibold text-slate-100">{title}</h2>
+      <div className="relative z-10 flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-3xl border border-line bg-surface shadow-2xl">
+        <div className="flex items-center justify-between border-b border-line px-4 py-3">
+          <h2 className="text-[17px] font-bold text-ink">{title}</h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 transition-colors active:bg-white/10"
+            className="rounded-lg p-1.5 text-ink-faint transition-colors active:bg-surface-2"
             aria-label="닫기"
           >
             <Icon name="close" className="h-5 w-5" />
@@ -344,7 +349,7 @@ export function Icon({ name, className }: { name: keyof typeof ICONS | string; c
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.8}
+      strokeWidth={1.9}
       strokeLinecap="round"
       strokeLinejoin="round"
       className={cn('h-5 w-5', className)}

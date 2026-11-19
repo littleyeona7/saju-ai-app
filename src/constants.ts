@@ -14,7 +14,7 @@ export const MODEL_OPTIONS = [
   { value: 'gemini-3.1-pro-preview', label: 'Gemini 3.1 Pro (깊은 해석 · 느림)' },
 ];
 
-/** 모델을 찾지 못했을 때(404) 순서대로 시도할 대체 모델 */
+/** 모델을 찾지 못했을 때(404) 또는 모델이 붐빌 때(503) 순서대로 시도할 대체 모델 */
 export const MODEL_FALLBACKS = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'];
 
 /** 더 이상 쓸 수 없는 모델 → 대체 모델. 저장된 설정을 불러올 때 자동으로 옮긴다. */

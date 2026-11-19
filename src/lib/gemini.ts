@@ -2,7 +2,8 @@
  * Gemini API 스트리밍 클라이언트 (브라우저에서 직접 호출).
  * - generateContentStream(alt=sse) 로 토큰을 받아 그대로 흘려보낸다.
  * - 모델을 찾지 못하면(404 · no longer available) 대체 모델로 자동 재시도하고,
- *   정적 목록이 모두 실패하면 ListModels로 지금 쓸 수 있는 모델을 찾아 한 번 더 시도한다.
+ *   모델이 붐비면(503 · high demand · overloaded) 다른 모델로 바로 넘어간다.
+ * - 정적 목록이 모두 실패하면 ListModels로 지금 쓸 수 있는 모델을 찾아 한 번 더 시도한다.
  */
 import { MODEL_FALLBACKS } from '../constants';
 
@@ -108,8 +109,19 @@ async function toError(res: Response): Promise<GeminiError> {
       '무료 사용량을 다 썼을 수 있어요. 잠시 뒤 다시 시도하거나 다른 키를 넣어 주세요.',
     );
   }
+  if (res.status === 503 || res.status === 529) {
+    return new GeminiError(
+      message || 'Gemini가 지금 붐벼서 답하지 못하고 있어요.',
+      res.status,
+      '다른 모델로도 시도했지만 모두 붐볐어요. 잠시 뒤 다시 말씀해 주세요.',
+    );
+  }
   if (res.status >= 500) {
-    return new GeminiError(message || 'Gemini 서버가 응답하지 않습니다.', res.status, '잠시 뒤 다시 시도해 주세요.');
+    return new GeminiError(
+      message || 'Gemini 서버가 응답하지 않습니다.',
+      res.status,
+      '다른 모델로도 시도했지만 실패했어요. 잠시 뒤 다시 시도해 주세요.',
+    );
   }
   return new GeminiError(message || `요청이 실패했습니다 (${res.status}).`, res.status);
 }
@@ -122,6 +134,24 @@ function isModelUnavailable(error: unknown): boolean {
   return /no longer available|not found|does not exist|not supported|unsupported model|deprecated|decommission/i.test(
     error.message,
   );
+}
+
+/**
+ * 모델은 있지만 지금 붐벼서 답하지 못하는 경우(503 · high demand · overloaded).
+ * 기다리게 하는 대신 다른 모델로 바로 넘어가면 대부분 뚫린다.
+ */
+function isOverloaded(error: unknown): boolean {
+  if (!(error instanceof GeminiError)) return false;
+  if (error.status === 503 || error.status === 529) return true;
+  if (error.status === 500 || error.status === 502 || error.status === 504) return true;
+  return /high demand|overload|over capacity|capacity|try again later|temporarily unavailable|service unavailable/i.test(
+    error.message,
+  );
+}
+
+/** 다른 모델로 다시 시도할 만한 오류인지 (단종 + 일시적 과부하). */
+function isRetryableElsewhere(error: unknown): boolean {
+  return isModelUnavailable(error) || isOverloaded(error);
 }
 
 /** thinkingLevel을 받지 않는 모델(400)이면 thinkingConfig 없이 다시 시도한다. */
@@ -262,7 +292,10 @@ export async function discoverModel(apiKey: string): Promise<string | null> {
   return [...names].sort((a, b) => score(b) - score(a))[0] ?? null;
 }
 
-/** 모델을 찾지 못하면 대체 모델로 넘어가며 스트리밍한다. */
+/**
+ * 고른 모델로 스트리밍하되, 단종(404)이나 일시적 과부하(503 · high demand)면
+ * 대체 모델로 자동으로 넘어간다. 답이 이미 흘러나온 뒤의 실패는 다시 시작하지 않는다.
+ */
 export async function* streamGemini(options: StreamOptions): AsyncGenerator<string, void, unknown> {
   const candidates = [options.model, ...MODEL_FALLBACKS.filter((model) => model !== options.model)];
   let lastError: unknown = null;
@@ -270,11 +303,13 @@ export async function* streamGemini(options: StreamOptions): AsyncGenerator<stri
 
   for (let index = 0; index < candidates.length; index += 1) {
     const model = candidates[index];
+    let emitted = false;
     try {
       const iterator = streamModel({ ...options, model });
       const first = await iterator.next();
       options.onModelUsed?.(model);
       if (first.done) return;
+      emitted = true;
       yield first.value;
       while (true) {
         const next = await iterator.next();
@@ -284,10 +319,11 @@ export async function* streamGemini(options: StreamOptions): AsyncGenerator<stri
     } catch (error) {
       if ((error as Error).name === 'AbortError') throw error;
       lastError = error;
-      if (!isModelUnavailable(error)) throw error;
+      // 이미 글자가 나온 뒤라면 다른 모델로 처음부터 다시 쓰지 않는다 (같은 문장이 겹친다).
+      if (emitted || !isRetryableElsewhere(error)) throw error;
 
-      // 정적 목록을 다 썼다면, 지금 쓸 수 있는 모델을 한 번 찾아서 시도한다.
-      if (index === candidates.length - 1 && !discoveryTried) {
+      // 단종된 모델이면, 정적 목록을 다 쓴 뒤 지금 쓸 수 있는 모델을 한 번 찾아서 시도한다.
+      if (isModelUnavailable(error) && index === candidates.length - 1 && !discoveryTried) {
         discoveryTried = true;
         const discovered = await discoverModel(options.apiKey).catch(() => null);
         if (discovered && !candidates.includes(discovered)) candidates.push(discovered);

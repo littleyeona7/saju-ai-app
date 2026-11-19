@@ -6,33 +6,33 @@ export function elementStyle(element: ElementKey) {
   const hex = ELEMENTS[element].hex;
   return {
     color: hex,
-    borderColor: `${hex}55`,
-    background: `linear-gradient(180deg, ${hex}24, ${hex}0d)`,
+    borderColor: `${hex}59`,
+    background: `linear-gradient(180deg, ${hex}1c, ${hex}08)`,
   } as const;
 }
 
 function StemCell({ pillar, highlight }: { pillar: Pillar | null; highlight?: boolean }) {
   if (!pillar) {
     return (
-      <div className="flex h-[92px] flex-col items-center justify-center rounded-2xl border border-dashed border-white/12 text-slate-600">
-        <span className="text-[11px]">시간 모름</span>
+      <div className="flex h-[104px] flex-col items-center justify-center rounded-2xl border border-dashed border-line-strong bg-surface-2 text-ink-faint">
+        <span className="text-[11.5px]">시간 모름</span>
       </div>
     );
   }
   return (
     <div
       className={cn(
-        'relative flex h-[92px] flex-col items-center justify-center rounded-2xl border px-1',
-        highlight && 'ring-2 ring-gold/70 ring-offset-2 ring-offset-ink-950',
+        'relative flex h-[104px] flex-col items-center justify-center rounded-2xl border px-1',
+        highlight && 'ring-2 ring-gold-deep/60 ring-offset-2 ring-offset-surface',
       )}
       style={elementStyle(pillar.stemElement)}
     >
       {highlight ? (
-        <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-gold" />
+        <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-gold-deep" />
       ) : null}
-      <span className="text-[10px] font-medium opacity-80">{pillar.stemSipsin}</span>
-      <span className="hanja text-[30px] font-semibold leading-none tracking-tight">{pillar.stem}</span>
-      <span className="mt-0.5 text-[10px] opacity-60">{pillar.stemKo}</span>
+      <span className="text-[11.5px] font-semibold">{pillar.stemSipsin}</span>
+      <span className="hanja mt-0.5 text-[34px] font-bold leading-none tracking-tight">{pillar.stem}</span>
+      <span className="mt-1 text-[11.5px] font-medium text-ink-faint">{pillar.stemKo}</span>
     </div>
   );
 }
@@ -40,20 +40,20 @@ function StemCell({ pillar, highlight }: { pillar: Pillar | null; highlight?: bo
 function BranchCell({ pillar }: { pillar: Pillar | null }) {
   if (!pillar) {
     return (
-      <div className="flex h-[104px] flex-col items-center justify-center rounded-2xl border border-dashed border-white/12 text-slate-600">
-        <span className="text-[11px]">—</span>
+      <div className="flex h-[118px] flex-col items-center justify-center rounded-2xl border border-dashed border-line-strong bg-surface-2 text-ink-faint">
+        <span className="text-[11.5px]">—</span>
       </div>
     );
   }
   return (
     <div
-      className="relative flex h-[104px] flex-col items-center justify-center rounded-2xl border px-1"
+      className="relative flex h-[118px] flex-col items-center justify-center rounded-2xl border px-1"
       style={elementStyle(pillar.branchElement)}
     >
-      <span className="hanja text-[30px] font-semibold leading-none tracking-tight">{pillar.branch}</span>
-      <span className="mt-0.5 text-[10px] opacity-60">{pillar.branchKo}</span>
-      <span className="mt-1 text-[10px] font-medium opacity-80">{pillar.branchSipsin}</span>
-      <span className="mt-0.5 max-w-full truncate text-[9px] leading-none opacity-45">
+      <span className="hanja text-[34px] font-bold leading-none tracking-tight">{pillar.branch}</span>
+      <span className="mt-1 text-[11.5px] font-medium text-ink-faint">{pillar.branchKo}</span>
+      <span className="mt-1 text-[11.5px] font-semibold">{pillar.branchSipsin}</span>
+      <span className="mt-1 max-w-full truncate text-[11px] leading-none text-ink-faint">
         {pillar.hidden.map((h) => h.char).join('·')}
       </span>
     </div>
@@ -70,13 +70,13 @@ export function SajuGrid({ chart }: { chart: Chart }) {
 
   return (
     <div className="select-none">
-      <div className="mb-1.5 grid grid-cols-4 gap-1.5">
+      <div className="mb-2 grid grid-cols-4 gap-1.5">
         {columns.map((column) => (
           <div key={column.key} className="text-center">
             <span
               className={cn(
-                'text-[11px] font-semibold tracking-wide',
-                column.isDay ? 'text-gold' : 'text-slate-500',
+                'text-[13px] font-bold tracking-wide',
+                column.isDay ? 'text-gold-ink' : 'text-ink-faint',
               )}
             >
               {column.label}
@@ -92,8 +92,8 @@ export function SajuGrid({ chart }: { chart: Chart }) {
         ))}
       </div>
 
-      <div className="my-1 flex items-center justify-center">
-        <span className="text-[9px] tracking-[0.3em] text-slate-600">천 간 · 지 지</span>
+      <div className="my-1.5 flex items-center justify-center">
+        <span className="text-[10.5px] tracking-[0.3em] text-ink-faint">천 간 · 지 지</span>
       </div>
 
       {/* 지지 (아랫줄) */}

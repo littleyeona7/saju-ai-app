@@ -1,22 +1,35 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink-950: #06080f;
-  --color-ink-900: #0a0e1a;
-  --color-ink-850: #0e1424;
-  --color-ink-800: #131a2c;
-  --color-ink-700: #1b2439;
-  --color-ink-600: #263148;
+  /* 표면 — 밝고 깨끗한 라이트 테마 */
+  --color-page: #f8f9fa;
+  --color-page-warm: #fdfbf7;
+  --color-surface: #ffffff;
+  --color-surface-2: #f3f4f6;
+  --color-surface-3: #ecf0f4;
+  --color-line: #e5e7eb;
+  --color-line-strong: #d5dae1;
 
-  --color-wood: #34d399;
-  --color-fire: #fb7185;
-  --color-earth: #fbbf24;
-  --color-metal: #cbd5e1;
-  --color-water: #60a5fa;
+  /* 글자 — 또렷한 차콜 */
+  --color-ink: #111827;
+  --color-ink-soft: #1f2937;
+  --color-ink-mid: #374151;
+  --color-ink-muted: #4b5563;
+  --color-ink-faint: #6b7280;
+  --color-on-gold: #3a2a06;
 
-  --color-gold: #f2d08a;
-  --color-gold-deep: #c9a24f;
-  --color-violet-glow: #8b7bf7;
+  /* 강조 */
+  --color-gold: #e9be74;
+  --color-gold-deep: #c1912f;
+  --color-gold-ink: #8d5f10;
+  --color-violet-glow: #7c6cf0;
+
+  /* 오행 — 흰 바탕에서도 읽히는 부드러운 파스텔 */
+  --color-wood: #2e9e68;
+  --color-fire: #e2616f;
+  --color-earth: #c98a17;
+  --color-metal: #6b7c93;
+  --color-water: #3b82d6;
 
   --font-sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard",
     "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif;
@@ -26,21 +39,25 @@
   html {
     -webkit-text-size-adjust: 100%;
     height: 100%;
+    font-size: 16px;
   }
 
   body {
     margin: 0;
     height: 100%;
     overflow: hidden;
-    color: #e9edf7;
+    color: var(--color-ink);
     font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.6;
+    letter-spacing: -0.01em;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
-    background-color: #06080f;
+    background-color: var(--color-page);
     background-image:
-      radial-gradient(620px 420px at 12% -8%, rgba(124, 100, 255, 0.28), transparent 62%),
-      radial-gradient(520px 360px at 92% 4%, rgba(242, 208, 138, 0.14), transparent 58%),
-      radial-gradient(700px 500px at 50% 108%, rgba(96, 165, 250, 0.12), transparent 62%);
+      radial-gradient(680px 460px at 8% -10%, rgba(233, 190, 116, 0.18), transparent 62%),
+      radial-gradient(560px 380px at 96% 0%, rgba(124, 108, 240, 0.1), transparent 60%),
+      radial-gradient(720px 520px at 50% 106%, rgba(59, 130, 214, 0.08), transparent 62%);
     background-attachment: fixed;
   }
 
@@ -57,7 +74,8 @@
   select,
   textarea {
     font-family: inherit;
-    font-size: 16px; /* iOS 자동 확대 방지 */
+    /* iOS Safari 자동 확대 방지: 16px 미만이면 입력할 때 화면이 확대된다 */
+    font-size: 16px;
   }
 
   select {
@@ -66,7 +84,12 @@
   }
 
   ::selection {
-    background: rgba(242, 208, 138, 0.3);
+    background: rgba(233, 190, 116, 0.4);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold-deep);
+    outline-offset: 2px;
   }
 }
 
@@ -89,8 +112,14 @@
   }
 
   .glass {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02));
-    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: rgba(255, 255, 255, 0.86);
+    border: 1px solid var(--color-line);
+  }
+
+  .card-soft {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04), 0 8px 24px -18px rgba(17, 24, 39, 0.35);
   }
 
   .text-balance {
@@ -129,19 +158,19 @@
     opacity: 1;
   }
   50% {
-    opacity: 0.45;
+    opacity: 0.4;
   }
 }
 
 @keyframes ring-out {
   0% {
-    box-shadow: 0 0 0 0 rgba(251, 113, 133, 0.45);
+    box-shadow: 0 0 0 0 rgba(226, 97, 111, 0.4);
   }
   70% {
-    box-shadow: 0 0 0 12px rgba(251, 113, 133, 0);
+    box-shadow: 0 0 0 12px rgba(226, 97, 111, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(251, 113, 133, 0);
+    box-shadow: 0 0 0 0 rgba(226, 97, 111, 0);
   }
 }
 
@@ -160,9 +189,9 @@
 .skeleton {
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.05) 25%,
-    rgba(255, 255, 255, 0.12) 37%,
-    rgba(255, 255, 255, 0.05) 63%
+    rgba(17, 24, 39, 0.06) 25%,
+    rgba(17, 24, 39, 0.11) 37%,
+    rgba(17, 24, 39, 0.06) 63%
   );
   background-size: 220% 100%;
   animation: shimmer 1.4s linear infinite;

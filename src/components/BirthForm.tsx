@@ -114,7 +114,7 @@ export function BirthForm({
   };
 
   return (
-    <div className="space-y-3.5">
+    <div className="space-y-4">
       {!minimal ? (
         <Field label={nameLabel}>
           <input
@@ -128,7 +128,7 @@ export function BirthForm({
       ) : null}
 
       <div>
-        <span className="mb-1 block text-[11px] font-medium tracking-wide text-slate-400">달력</span>
+        <span className="mb-1.5 block text-[13px] font-semibold tracking-wide text-ink-muted">달력</span>
         <Segmented
           options={[
             { value: 'solar', label: '양력' },
@@ -143,7 +143,7 @@ export function BirthForm({
       </div>
 
       <div>
-        <span className="mb-1 block text-[11px] font-medium tracking-wide text-slate-400">태어난 날</span>
+        <span className="mb-1.5 block text-[13px] font-semibold tracking-wide text-ink-muted">태어난 날</span>
         <div className="grid grid-cols-[1.35fr_1fr_1fr] gap-1.5">
           <select className={selectClass} value={year} onChange={(event) => setYear(Number(event.target.value))}>
             {years.map((y) => (
@@ -170,8 +170,8 @@ export function BirthForm({
         {calendar === 'lunar' ? (
           <label
             className={cn(
-              'mt-1.5 flex items-center gap-1.5 text-[11px]',
-              leapAvailable ? 'text-slate-400' : 'text-slate-600',
+              'mt-2 flex items-center gap-1.5 text-[12.5px]',
+              leapAvailable ? 'text-ink-muted' : 'text-ink-faint',
             )}
           >
             <input
@@ -179,7 +179,7 @@ export function BirthForm({
               checked={leapMonth}
               disabled={!leapAvailable}
               onChange={(event) => setLeapMonth(event.target.checked)}
-              className="h-3.5 w-3.5 accent-[#f2d08a]"
+              className="h-4 w-4 accent-[#c1912f]"
             />
             윤달 (이 해에는 {leapAvailable ? `${month}월 윤달이 있어요` : '해당 윤달이 없어요'})
           </label>
@@ -188,7 +188,7 @@ export function BirthForm({
 
       {showGender ? (
         <div>
-          <span className="mb-1 block text-[11px] font-medium tracking-wide text-slate-400">성별</span>
+          <span className="mb-1.5 block text-[13px] font-semibold tracking-wide text-ink-muted">성별</span>
           <Segmented
             options={[
               { value: 'female', label: '여성' },
@@ -200,7 +200,7 @@ export function BirthForm({
         </div>
       ) : null}
 
-      <div className="rounded-xl border border-white/8 bg-black/20 p-3">
+      <div className="rounded-xl border border-line bg-surface-2 p-3">
         <Toggle
           checked={timeKnown}
           onChange={setTimeKnown}
@@ -222,22 +222,22 @@ export function BirthForm({
                 setMinute(0);
               }
             }}
-            className={cn(inputClass, 'mt-2.5 text-center tabular-nums')}
+            className={cn(inputClass, 'mt-3 text-center text-[17px] tabular-nums')}
           />
         ) : null}
       </div>
 
       {showSaveOption ? (
-        <label className="flex items-start gap-2 rounded-xl border border-white/8 bg-white/[0.03] p-3">
+        <label className="flex items-start gap-2.5 rounded-xl border border-line bg-surface p-3">
           <input
             type="checkbox"
             checked={save}
             onChange={(event) => setSave(event.target.checked)}
-            className="mt-0.5 h-4 w-4 accent-[#f2d08a]"
+            className="mt-0.5 h-[18px] w-[18px] accent-[#c1912f]"
           />
           <span className="min-w-0">
-            <span className="block text-[12.5px] font-medium text-slate-200">이 프로필 저장하기</span>
-            <span className="mt-0.5 block text-[11px] leading-snug text-slate-500">
+            <span className="block text-[14.5px] font-semibold text-ink">이 프로필 저장하기</span>
+            <span className="mt-0.5 block text-[12.5px] leading-snug text-ink-faint">
               저장하면 다음에 바로 꺼내 쓸 수 있어요. (최대 10개, 이 기기에만 저장)
             </span>
           </span>
@@ -245,17 +245,15 @@ export function BirthForm({
       ) : null}
 
       {error ? (
-        <p className="rounded-lg border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-[12px] text-rose-200">
-          {error}
-        </p>
+        <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[13.5px] text-rose-700">{error}</p>
       ) : null}
 
       <PrimaryButton onClick={handleSubmit}>
-        <span className="text-[15px]">{submitLabel}</span>
+        <span>{submitLabel}</span>
       </PrimaryButton>
 
       {onCancel ? (
-        <button type="button" onClick={onCancel} className="w-full py-1 text-[12.5px] text-slate-500">
+        <button type="button" onClick={onCancel} className="w-full py-1.5 text-[14px] font-medium text-ink-faint">
           취소
         </button>
       ) : null}

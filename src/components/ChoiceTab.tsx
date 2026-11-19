@@ -123,15 +123,15 @@ export function ChoiceTab({
         <div className="no-scrollbar flex-1 overflow-y-auto px-4 py-4">
           <div className="mx-auto w-full max-w-md space-y-3">
             <div className="animate-fade-up">
-              <h2 className="text-[18px] font-bold tracking-tight text-slate-50">인생 선택 A vs B</h2>
-              <p className="mt-1 text-[12px] leading-relaxed text-slate-400">
+              <h2 className="text-[21px] font-bold tracking-tight text-ink">인생 선택 A vs B</h2>
+              <p className="mt-1.5 text-[14px] leading-relaxed text-ink-muted">
                 지금 고민하는 갈림길을 적으면, 두 선택의 1·3·5년 뒤를 사주로 나란히 펼쳐 드려요.
               </p>
             </div>
 
-            <Card className="space-y-3">
+            <Card className="space-y-3.5">
               <div>
-                <span className="mb-1 block text-[11px] font-medium tracking-wide text-slate-400">갈림길</span>
+                <span className="mb-1.5 block text-[13px] font-semibold tracking-wide text-ink-muted">갈림길</span>
                 <input
                   className={inputClass}
                   value={crossroad}
@@ -140,10 +140,12 @@ export function ChoiceTab({
                 />
               </div>
 
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <div className="rounded-xl border border-violet-400/25 bg-violet-500/[0.07] p-2.5">
-                  <span className="mb-1 flex items-center gap-1 text-[11px] font-semibold text-violet-200">
-                    <span className="flex h-4 w-4 items-center justify-center rounded bg-violet-400/25 text-[10px]">A</span>
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                <div className="rounded-xl border border-[#d9d2fb] bg-[#f4f1ff] p-3">
+                  <span className="mb-1.5 flex items-center gap-1.5 text-[13px] font-bold text-[#5b47c9]">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#d9d2fb] text-[11.5px] font-bold text-[#43339f]">
+                      A
+                    </span>
                     선택지 A
                   </span>
                   <textarea
@@ -151,12 +153,14 @@ export function ChoiceTab({
                     onChange={(event) => setOptionA(event.target.value.slice(0, 200))}
                     rows={3}
                     placeholder="예: 이직해서 새 회사로 간다"
-                    className="w-full resize-none rounded-lg border border-white/10 bg-black/30 px-2.5 py-2 text-[13px] leading-snug text-slate-100 placeholder:text-slate-600 focus:border-violet-300/50 focus:outline-none"
+                    className="w-full resize-none rounded-lg border border-[#d9d2fb] bg-surface px-3 py-2.5 text-[15.5px] leading-snug text-ink placeholder:text-ink-faint focus:border-[#8b7bf7] focus:outline-none focus:ring-2 focus:ring-[#8b7bf7]/25"
                   />
                 </div>
-                <div className="rounded-xl border border-teal-400/25 bg-teal-500/[0.07] p-2.5">
-                  <span className="mb-1 flex items-center gap-1 text-[11px] font-semibold text-teal-200">
-                    <span className="flex h-4 w-4 items-center justify-center rounded bg-teal-400/25 text-[10px]">B</span>
+                <div className="rounded-xl border border-[#bfe6dc] bg-[#eefaf6] p-3">
+                  <span className="mb-1.5 flex items-center gap-1.5 text-[13px] font-bold text-[#0f766e]">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#bfe6dc] text-[11.5px] font-bold text-[#0b5d56]">
+                      B
+                    </span>
                     선택지 B
                   </span>
                   <textarea
@@ -164,30 +168,30 @@ export function ChoiceTab({
                     onChange={(event) => setOptionB(event.target.value.slice(0, 200))}
                     rows={3}
                     placeholder="예: 지금 회사에 남아 승진을 노린다"
-                    className="w-full resize-none rounded-lg border border-white/10 bg-black/30 px-2.5 py-2 text-[13px] leading-snug text-slate-100 placeholder:text-slate-600 focus:border-teal-300/50 focus:outline-none"
+                    className="w-full resize-none rounded-lg border border-[#bfe6dc] bg-surface px-3 py-2.5 text-[15.5px] leading-snug text-ink placeholder:text-ink-faint focus:border-[#14b8a6] focus:outline-none focus:ring-2 focus:ring-[#14b8a6]/25"
                   />
                 </div>
               </div>
 
               <div>
-                <span className="mb-1 block text-[11px] font-medium tracking-wide text-slate-400">목표 시점</span>
+                <span className="mb-1.5 block text-[13px] font-semibold tracking-wide text-ink-muted">목표 시점</span>
                 <input
                   className={inputClass}
                   value={timing}
                   onChange={(event) => setTiming(event.target.value.slice(0, 40))}
                   placeholder="예: 2027년 봄, 내년 상반기"
                 />
-                <div className="mt-1.5 flex flex-wrap gap-1">
+                <div className="mt-2 flex flex-wrap gap-1.5">
                   {TIMING_CHIPS.map((chip) => (
                     <button
                       key={chip}
                       type="button"
                       onClick={() => setTiming(chip)}
                       className={cn(
-                        'rounded-full border px-2 py-0.5 text-[10.5px]',
+                        'rounded-full border px-2.5 py-1 text-[12.5px] font-medium',
                         timing === chip
-                          ? 'border-gold/50 bg-gold/15 text-gold'
-                          : 'border-white/10 text-slate-400',
+                          ? 'border-gold bg-gold/20 text-gold-ink'
+                          : 'border-line bg-surface text-ink-muted',
                       )}
                     >
                       {chip}
@@ -197,34 +201,34 @@ export function ChoiceTab({
               </div>
 
               {partner ? (
-                <label className="flex items-center gap-2 rounded-xl border border-white/8 bg-black/20 px-3 py-2.5">
+                <label className="flex items-center gap-2.5 rounded-xl border border-line bg-surface-2 px-3 py-3">
                   <input
                     type="checkbox"
                     checked={usePartner}
                     onChange={(event) => setUsePartner(event.target.checked)}
-                    className="h-4 w-4 accent-[#f2d08a]"
+                    className="h-[18px] w-[18px] accent-[#c1912f]"
                   />
-                  <span className="min-w-0 text-[12px] leading-snug text-slate-300">
+                  <span className="min-w-0 text-[14px] leading-snug text-ink-soft">
                     배우자·파트너 사주({partner.name || '파트너'}) 함께 보기
                   </span>
                 </label>
               ) : null}
 
               {formError ? (
-                <p className="rounded-lg border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-[12px] text-rose-200">
+                <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[13.5px] text-rose-700">
                   {formError}
                 </p>
               ) : null}
 
               <PrimaryButton onClick={submit}>
-                <Icon name="scales" className="h-4 w-4" />
+                <Icon name="scales" className="h-5 w-5" />
                 두 갈래 미래 비교하기
               </PrimaryButton>
             </Card>
 
-            <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-3.5">
-              <p className="text-[11.5px] font-medium text-slate-300">이렇게 비교해 드려요</p>
-              <ul className="mt-1.5 space-y-1 text-[11px] leading-relaxed text-slate-500">
+            <div className="rounded-2xl border border-line bg-surface p-4">
+              <p className="text-[14px] font-bold text-ink-soft">이렇게 비교해 드려요</p>
+              <ul className="mt-2 space-y-1.5 text-[13.5px] leading-relaxed text-ink-muted">
                 <li>· 오행·십신·합충이 어떻게 달라지는지</li>
                 <li>· 1년 · 3년 · 5년 흐름</li>
                 <li>· 각 선택에서 얻는 것과 리스크</li>
@@ -232,7 +236,7 @@ export function ChoiceTab({
               </ul>
             </div>
 
-            <div className="flex flex-wrap gap-1.5 pb-2">
+            <div className="flex flex-wrap gap-2 pb-2">
               {[
                 { label: '결혼 vs 비혼', a: '지금 결혼을 결정한다', b: '조금 더 지내며 지켜본다' },
                 { label: '이직 vs 유지', a: '올해 이직한다', b: '현 직장에 남는다' },
@@ -247,7 +251,7 @@ export function ChoiceTab({
                     setOptionB(preset.b);
                     setFormError(null);
                   }}
-                  className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-[11px] text-slate-300 active:bg-white/10"
+                  className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] font-medium text-ink-soft active:bg-surface-2"
                 >
                   {preset.label}
                 </button>
@@ -262,21 +266,21 @@ export function ChoiceTab({
   /* ----------------------------- 결과 화면 ----------------------------- */
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-start justify-between gap-2 border-b border-white/8 px-4 py-2.5">
+      <div className="flex items-start justify-between gap-2 border-b border-line bg-surface/70 px-4 py-3">
         <div className="min-w-0">
-          <p className="truncate text-[13.5px] font-semibold text-slate-100">{request.crossroad}</p>
-          <p className="truncate text-[10.5px] text-slate-500">
+          <p className="truncate text-[15.5px] font-bold text-ink">{request.crossroad}</p>
+          <p className="truncate text-[12.5px] text-ink-faint">
             {request.timing ? `${request.timing} · ` : ''}
             {profile.birth.name || '나'}의 사주 기준
           </p>
         </div>
-        <GhostButton onClick={restart} className="shrink-0 py-1 text-[11px]">
+        <GhostButton onClick={restart} className="shrink-0 py-1.5 text-[12.5px]">
           새로 비교
         </GhostButton>
       </div>
 
       <div className="no-scrollbar flex-1 overflow-y-auto overscroll-contain px-3 py-3">
-        <div className="mx-auto w-full max-w-md space-y-2.5">
+        <div className="mx-auto w-full max-w-md space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <ComparisonCard
               tone="a"
@@ -295,10 +299,10 @@ export function ChoiceTab({
           </div>
 
           {sections.c ? (
-            <Card className="animate-fade-up border-gold/25 bg-gold/[0.07]">
-              <div className="mb-1 flex items-center justify-between">
-                <span className="flex items-center gap-1 text-[11.5px] font-semibold text-gold">
-                  <Icon name="spark" className="h-3.5 w-3.5" /> 종합 조언
+            <Card className="animate-fade-up border-gold/70 bg-[#fdf6e7]">
+              <div className="mb-1.5 flex items-center justify-between">
+                <span className="flex items-center gap-1.5 text-[14.5px] font-bold text-gold-ink">
+                  <Icon name="spark" className="h-4 w-4" /> 종합 조언
                 </span>
                 <button
                   type="button"
@@ -306,10 +310,10 @@ export function ChoiceTab({
                     if (speech.speakingId === 'comparison') speech.stop();
                     else speech.speak(toSpeechText(sections.c), 'comparison');
                   }}
-                  className="rounded-md p-1 text-gold/70"
+                  className="rounded-md p-1.5 text-gold-ink"
                   aria-label="조언 읽어 주기"
                 >
-                  <Icon name={speech.speakingId === 'comparison' ? 'volume' : 'mute'} className="h-3.5 w-3.5" />
+                  <Icon name={speech.speakingId === 'comparison' ? 'volume' : 'mute'} className="h-4 w-4" />
                 </button>
               </div>
               <Markdown text={sections.c} />
@@ -322,14 +326,14 @@ export function ChoiceTab({
           ) : null}
 
           {!sections.hasMarkers && sections.a && !isComparisonStreaming ? (
-            <p className="px-1 text-[10.5px] leading-snug text-slate-600">
+            <p className="px-1 text-[12px] leading-snug text-ink-faint">
               모델이 구획 표시 없이 답했습니다. 위 A/B 카드에 전체 답변이 나뉘어 담겼어요.
             </p>
           ) : null}
 
           {followUps.length ? (
-            <div className="space-y-3 border-t border-white/8 pt-3">
-              <p className="text-[10.5px] font-medium text-slate-500">이어서 물어보기</p>
+            <div className="space-y-3.5 border-t border-line pt-3">
+              <p className="text-[12.5px] font-semibold text-ink-faint">이어서 물어보기</p>
               {followUps.map((message) => (
                 <ChatBubble
                   key={message.id}
@@ -352,7 +356,7 @@ export function ChoiceTab({
                   key={chip}
                   type="button"
                   onClick={() => chat.send(chip)}
-                  className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-[11px] text-slate-300 active:bg-white/10"
+                  className="rounded-full border border-line bg-surface px-3 py-1.5 text-[12.5px] font-medium text-ink-soft active:bg-surface-2"
                 >
                   {chip}
                 </button>
@@ -389,22 +393,37 @@ function ComparisonCard({
 }) {
   const styles =
     tone === 'a'
-      ? { border: 'border-violet-400/25', bg: 'bg-violet-500/[0.07]', text: 'text-violet-200', badge: 'bg-violet-400/25' }
-      : { border: 'border-teal-400/25', bg: 'bg-teal-500/[0.07]', text: 'text-teal-200', badge: 'bg-teal-400/25' };
+      ? {
+          border: 'border-[#d9d2fb]',
+          bg: 'bg-[#f6f3ff]',
+          text: 'text-[#5040b0]',
+          badge: 'bg-[#d9d2fb] text-[#43339f]',
+        }
+      : {
+          border: 'border-[#bfe6dc]',
+          bg: 'bg-[#f0faf7]',
+          text: 'text-[#0f766e]',
+          badge: 'bg-[#bfe6dc] text-[#0b5d56]',
+        };
 
   return (
-    <div className={cn('rounded-2xl border p-2.5', styles.border, styles.bg)}>
-      <div className="mb-1.5">
-        <span className={cn('mb-1 inline-flex h-4 w-4 items-center justify-center rounded text-[10px] font-bold', styles.badge, styles.text)}>
+    <div className={cn('rounded-2xl border p-3', styles.border, styles.bg)}>
+      <div className="mb-2">
+        <span
+          className={cn(
+            'mb-1 inline-flex h-5 w-5 items-center justify-center rounded-md text-[11.5px] font-bold',
+            styles.badge,
+          )}
+        >
           {tone.toUpperCase()}
         </span>
-        <p className={cn('mt-1 text-[11.5px] font-semibold leading-snug', styles.text)}>{title}</p>
-        <p className="mt-0.5 line-clamp-2 text-[10px] leading-snug text-slate-400">{option}</p>
+        <p className={cn('mt-1 text-[14.5px] font-bold leading-snug', styles.text)}>{title}</p>
+        <p className="mt-0.5 line-clamp-2 text-[12.5px] leading-snug text-ink-muted">{option}</p>
       </div>
       {body ? (
         <Markdown
           text={body}
-          className="[&_h4]:text-[11.5px] [&_h4]:mt-2 [&_li]:text-[10.5px] [&_li]:leading-[1.5] [&_p]:text-[10.5px] [&_p]:leading-[1.55] [&_p]:my-0.5 [&_ul]:my-0.5"
+          className="[&_h4]:mb-1 [&_h4]:mt-2.5 [&_h4]:text-[13.5px] [&_li]:text-[13px] [&_li]:leading-[1.6] [&_p]:my-1 [&_p]:text-[13px] [&_p]:leading-[1.65] [&_ul]:my-1 [&_ul]:space-y-1"
         />
       ) : streaming ? (
         <div className="space-y-1.5 pt-1">
@@ -414,7 +433,7 @@ function ComparisonCard({
           <div className="skeleton h-2.5 w-full rounded" />
         </div>
       ) : (
-        <p className="text-[10.5px] text-slate-600">—</p>
+        <p className="text-[13px] text-ink-faint">—</p>
       )}
     </div>
   );

@@ -193,14 +193,14 @@ export default function App() {
   const onboarding = !current || !chartState.chart;
 
   return (
-    <div className="relative mx-auto flex h-[100dvh] w-full max-w-md flex-col overflow-hidden border-white/5 bg-ink-950/55 sm:border-x">
-      <header className="safe-top z-20 shrink-0 border-b border-white/8 bg-ink-950/75 backdrop-blur">
-        <div className="flex h-12 items-center justify-between gap-2 px-4">
+    <div className="relative mx-auto flex h-[100dvh] w-full max-w-md flex-col overflow-hidden bg-page sm:border-x sm:border-line">
+      <header className="safe-top z-20 shrink-0 border-b border-line bg-surface/85 backdrop-blur">
+        <div className="flex h-14 items-center justify-between gap-2 px-4">
           <div className="flex min-w-0 items-center gap-2">
-            <span className="text-[17px] leading-none">🔮</span>
+            <span className="text-[19px] leading-none">🔮</span>
             <div className="min-w-0">
-              <p className="truncate text-[13.5px] font-semibold leading-tight text-slate-100">사주 AI</p>
-              <p className="truncate text-[10px] leading-tight text-slate-500">
+              <p className="truncate text-[16px] font-bold leading-tight text-ink">사주 AI</p>
+              <p className="truncate text-[12px] leading-tight text-ink-faint">
                 {current ? `${current.birth.name || '이름 없음'} · ${current.birth.gender === 'male' ? '남' : '여'} · 만 ${chartState.chart?.age ?? '-'}세` : '만세력 · 인생 선택 시뮬레이터'}
               </p>
             </div>
@@ -210,7 +210,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setTab('saju')}
-                className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[10.5px] text-slate-300"
+                className="rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[12.5px] font-semibold text-ink-muted"
               >
                 내 사주
               </button>
@@ -219,9 +219,9 @@ export default function App() {
               type="button"
               onClick={() => setSettingsOpen(true)}
               aria-label="설정"
-              className="rounded-lg border border-white/10 bg-white/5 p-1.5 text-slate-300 active:bg-white/10"
+              className="rounded-lg border border-line bg-surface p-2 text-ink-muted active:bg-surface-2"
             >
-              <Icon name="gear" className="h-[17px] w-[17px]" />
+              <Icon name="gear" className="h-[19px] w-[19px]" />
             </button>
           </div>
         </div>
@@ -245,7 +245,7 @@ export default function App() {
               }
             />
             {chartState.error ? (
-              <p className="mx-4 mb-4 rounded-lg border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-[12px] text-rose-200">
+              <p className="mx-4 mb-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[13px] text-rose-700">
                 {chartState.error}
               </p>
             ) : null}
@@ -287,7 +287,7 @@ export default function App() {
       </main>
 
       {!onboarding ? (
-        <nav className="safe-bottom z-20 shrink-0 border-t border-white/8 bg-ink-950/90 backdrop-blur">
+        <nav className="safe-bottom z-20 shrink-0 border-t border-line bg-surface/92 backdrop-blur">
           <div className="flex items-stretch">
             {TABS.map((item) => {
               const active = tab === item.key;
@@ -296,16 +296,16 @@ export default function App() {
                   key={item.key}
                   type="button"
                   onClick={() => setTab(item.key)}
-                  className="relative flex flex-1 flex-col items-center gap-0.5 py-2"
+                  className="relative flex flex-1 flex-col items-center gap-1 py-2.5"
                 >
                   <Icon
                     name={item.icon}
-                    className={cn('h-[19px] w-[19px] transition-colors', active ? 'text-gold' : 'text-slate-500')}
+                    className={cn('h-[22px] w-[22px] transition-colors', active ? 'text-gold-ink' : 'text-ink-faint')}
                   />
-                  <span className={cn('text-[10px] font-medium', active ? 'text-gold' : 'text-slate-500')}>
+                  <span className={cn('text-[12px] font-semibold', active ? 'text-gold-ink' : 'text-ink-faint')}>
                     {item.label}
                   </span>
-                  {active ? <span className="absolute top-0 h-0.5 w-8 rounded-full bg-gold" /> : null}
+                  {active ? <span className="absolute top-0 h-0.5 w-9 rounded-full bg-gold-deep" /> : null}
                 </button>
               );
             })}
@@ -315,7 +315,7 @@ export default function App() {
 
       {toast ? (
         <div className="pointer-events-none fixed inset-x-0 bottom-24 z-40 flex justify-center px-6">
-          <div className="animate-fade-up rounded-full border border-white/12 bg-ink-800/95 px-4 py-2 text-[12px] text-slate-200 shadow-lg">
+          <div className="animate-fade-up rounded-full border border-line bg-surface px-4 py-2.5 text-[13.5px] font-medium text-ink shadow-lg">
             {toast}
           </div>
         </div>

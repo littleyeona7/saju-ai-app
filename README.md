@@ -5,6 +5,7 @@
 
 - 라이브: https://littleyeona7.github.io/saju-ai-app/
 - 스택: Vite · React 18 · TypeScript · Tailwind CSS v4
+- 테마: 밝은 라이트 테마(흰 카드 · 아이보리 배경) + 모바일에서 읽기 편한 큰 글씨
 - 만세력 엔진: [`lunar-javascript`](https://github.com/6tail/lunar-javascript) (절기·음양력·대운 계산)
 
 ## 기능
@@ -27,7 +28,8 @@
 npm install
 npm run dev      # 로컬 개발
 npm run verify   # 만세력 엔진 검증 (44개 항목)
-npm run smoke    # 화면 렌더링 스모크 테스트 (24개 항목)
+npm run smoke    # 화면 렌더링 스모크 테스트 (31개 항목)
+npm run test:ai  # Gemini 스트리밍·폴백 테스트 (38개 항목)
 npm run build    # 프로덕션 빌드 (dist/)
 ```
 
@@ -40,7 +42,16 @@ AI 상담과 A vs B 비교는 Gemini API를 브라우저에서 직접 호출합�
 2. 빌드 시 환경변수: `VITE_GEMINI_API_KEY=...` (GitHub Actions에서는 `secrets.VITE_GEMINI_API_KEY`)
 
 키는 [Google AI Studio](https://aistudio.google.com/app/apikey)에서 무료로 만들 수 있습니다.
-기본 모델은 `gemini-3.8-flash`이며, 모델이 단종되었거나 찾지 못하면 대체 모델(`gemini-3.6-flash` → `gemini-3.5-flash-lite`)로 자동 재시도하고, 그래도 안 되면 ListModels로 지금 쓸 수 있는 모델을 찾아 시도합니다. 예전 버전에서 저장한 `gemini-2.5-flash` 설정은 불러올 때 자동으로 새 모델로 옮겨집니다.
+기본 모델은 `gemini-3.8-flash`이며, 모델이 단종되었거나(404 · no longer available) 지금 붐벼서 답하지 못하면(503 · high demand · overloaded · 5xx) 대체 모델(`gemini-3.6-flash` → `gemini-3.5-flash-lite`)로 자동으로 넘어갑니다. 그래도 안 되면 ListModels로 지금 쓸 수 있는 모델을 찾아 시도합니다. 답이 이미 흘러나온 뒤에 난 오류는 다른 모델로 처음부터 다시 쓰지 않아 같은 문장이 겹치지 않습니다. 예전 버전에서 저장한 `gemini-2.5-flash` 설정은 불러올 때 자동으로 새 모델로 옮겨집니다.
+
+## 화면 테마
+
+배경은 `#F8F9FA`, 카드는 흰색(`#FFFFFF`), 본문 글자는 `#111827`~`#1F2937`, 경계선은 `#E5E7EB`입니다.
+색은 `src/index.css` 의 `@theme` 토큰(`--color-page`, `--color-surface`, `--color-line`, `--color-ink*`, `--color-gold*`)으로 정의되어 있어 한 곳에서 바꿀 수 있습니다.
+오행 색(목·화·토·금·수)은 흰 바탕에서도 읽히도록 `src/lib/saju.ts` 의 `ELEMENTS` hex로 조정했습니다.
+
+모바일 가독성을 위해 채팅 말풍선은 15.5px·줄간 1.65~1.75, 입력창은 iOS 자동 확대를 막는 16px,
+사주 그리드 한자와 버튼·A/B 카드는 기존보다 키웠습니다.
 
 ## 만세력 검증
 

@@ -21,11 +21,11 @@ export interface ElementMeta {
 }
 
 export const ELEMENTS: Record<ElementKey, ElementMeta> = {
-  wood: { key: 'wood', ko: '목', hanja: '木', hex: '#34d399' },
-  fire: { key: 'fire', ko: '화', hanja: '火', hex: '#fb7185' },
-  earth: { key: 'earth', ko: '토', hanja: '土', hex: '#fbbf24' },
-  metal: { key: 'metal', ko: '금', hanja: '金', hex: '#cbd5e1' },
-  water: { key: 'water', ko: '수', hanja: '水', hex: '#60a5fa' },
+  wood: { key: 'wood', ko: '목', hanja: '木', hex: '#2e9e68' },
+  fire: { key: 'fire', ko: '화', hanja: '火', hex: '#e2616f' },
+  earth: { key: 'earth', ko: '토', hanja: '土', hex: '#c98a17' },
+  metal: { key: 'metal', ko: '금', hanja: '金', hex: '#6b7c93' },
+  water: { key: 'water', ko: '수', hanja: '水', hex: '#3b82d6' },
 };
 
 export const ELEMENT_ORDER: ElementKey[] = ['wood', 'fire', 'earth', 'metal', 'water'];

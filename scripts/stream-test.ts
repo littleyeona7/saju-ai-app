@@ -221,6 +221,108 @@ async function main() {
   check('정적 3개 실패 후 ListModels 호출', listed.length === 4, listed.join(','));
   check('TTS·비지원 모델은 건너뛰고 최신 Flash 선택', discoveredText === '발견한 모델(gemini-3.9-flash) 응답', discoveredText);
 
+  console.log('\n[3-4] 503 · 모델 과부하(high demand) → 대체 모델 자동 재시도');
+  const busyModels: string[] = [];
+  globalThis.setFetch((async (input: RequestInfo | URL) => {
+    const url = String(input);
+    const match = url.match(/models\/([^:]+):/);
+    const model = match ? decodeURIComponent(match[1]) : '';
+    busyModels.push(model);
+    if (model === 'gemini-3.8-flash') {
+      return jsonResponse(503, {
+        error: {
+          code: 503,
+          message: 'The model is currently overloaded. We are experiencing high demand.',
+          status: 'UNAVAILABLE',
+        },
+      });
+    }
+    return sseResponse([{ text: '붐빌 때 대체 모델 응답' }, { finishReason: 'STOP' }]);
+  }) as typeof fetch);
+
+  let busyText = '';
+  let busyUsed = '';
+  for await (const chunk of streamGemini({
+    apiKey: 'k',
+    model: 'gemini-3.8-flash',
+    contents: [{ role: 'user', parts: [{ text: 'x' }] }],
+    onModelUsed: (model) => {
+      busyUsed = model;
+    },
+  })) {
+    busyText += chunk;
+  }
+  check('503 후 다음 모델로 재시도', busyModels.length === 2 && busyModels[1] === 'gemini-3.6-flash', busyModels.join(','));
+  check('대체 모델의 답변 수신 (503)', busyText === '붐빌 때 대체 모델 응답', busyText);
+  check('503에서도 사용 모델 보고', busyUsed === 'gemini-3.6-flash', busyUsed);
+
+  console.log('\n[3-5] 모든 모델이 503이면 안내 문구가 담기고, 503은 모델 탐색을 하지 않는다');
+  const allBusy: string[] = [];
+  globalThis.setFetch((async (input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes('/models?')) return jsonResponse(200, { models: [{ name: 'models/gemini-3.9-flash' }] });
+    const match = url.match(/models\/([^:]+):/);
+    allBusy.push(match ? decodeURIComponent(match[1]) : '');
+    return jsonResponse(503, { error: { code: 503, message: 'The model is overloaded.', status: 'UNAVAILABLE' } });
+  }) as typeof fetch);
+
+  let busyError: unknown = null;
+  try {
+    await collect({ apiKey: 'k', model: 'gemini-3.8-flash', contents: [{ role: 'user', parts: [{ text: 'x' }] }] });
+  } catch (error) {
+    busyError = error;
+  }
+  check('503 소진 후 GeminiError 503', busyError instanceof GeminiError && busyError.status === 503);
+  check('대체 모델을 모두 시도', allBusy.length === 3, allBusy.join(','));
+  check(
+    '503에는 모델 탐색(ListModels)을 하지 않음',
+    !allBusy.includes('') && allBusy.every((model) => model.startsWith('gemini-')),
+    allBusy.join(','),
+  );
+  check(
+    '다시 시도 안내 힌트',
+    busyError instanceof GeminiError && /잠시 뒤|다시/.test(busyError.hint),
+    busyError instanceof GeminiError ? busyError.hint : '',
+  );
+
+  console.log('\n[3-6] 답이 나온 뒤 실패하면 다른 모델로 처음부터 다시 쓰지 않는다 (중복 방지)');
+  let restartCalls = 0;
+  globalThis.setFetch((async () => {
+    restartCalls += 1;
+    const encoder = new TextEncoder();
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(
+          encoder.encode(
+            `data: ${JSON.stringify({ candidates: [{ content: { parts: [{ text: '시작 문장' }] } }] })}\r\n\r\n`,
+          ),
+        );
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({ promptFeedback: { blockReason: 'SAFETY' } })}\r\n\r\n`),
+        );
+        controller.close();
+      },
+    });
+    return new Response(body, { status: 200, headers: { 'Content-Type': 'text/event-stream' } });
+  }) as typeof fetch);
+
+  let partialText = '';
+  let streamError: unknown = null;
+  try {
+    for await (const chunk of streamGemini({
+      apiKey: 'k',
+      model: 'gemini-3.8-flash',
+      contents: [{ role: 'user', parts: [{ text: 'x' }] }],
+    })) {
+      partialText += chunk;
+    }
+  } catch (error) {
+    streamError = error;
+  }
+  check('나온 문장은 한 번만', partialText === '시작 문장', partialText);
+  check('중간 실패는 다른 모델로 재시도하지 않음', restartCalls === 1, String(restartCalls));
+  check('중간 실패는 그대로 전달', streamError !== null);
+
   console.log('\n[4] 429 한도 초과');
   globalThis.setFetch((async () =>
     jsonResponse(429, { error: { code: 429, message: 'Resource has been exhausted', status: 'RESOURCE_EXHAUSTED' } })) as typeof fetch);

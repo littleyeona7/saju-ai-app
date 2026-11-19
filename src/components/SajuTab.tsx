@@ -51,30 +51,30 @@ export function SajuTab({
   return (
     <div className="mx-auto w-full max-w-md space-y-3 px-4 py-4">
       {/* 정체성 */}
-      <Card className="animate-fade-up bg-gradient-to-br from-white/[0.07] to-white/[0.02]">
+      <Card className="animate-fade-up border-gold/40 bg-gradient-to-br from-[#fdf6e7] to-surface">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <h1 className="truncate text-[19px] font-bold tracking-tight text-slate-50">{displayName}</h1>
-              <span className="shrink-0 text-[11px] text-slate-500">
+              <h1 className="truncate text-[22px] font-bold tracking-tight text-ink">{displayName}</h1>
+              <span className="shrink-0 text-[13px] font-medium text-ink-faint">
                 {genderLabel(profile.birth.gender)} · 만 {chart.age}세
               </span>
             </div>
-            <p className="mt-0.5 truncate text-[11.5px] text-slate-400">{formatSolarBirth(profile.birth, chart)}</p>
+            <p className="mt-1 truncate text-[13px] text-ink-faint">{formatSolarBirth(profile.birth, chart)}</p>
           </div>
-          <span className="shrink-0 rounded-full border border-gold/25 bg-gold/10 px-2 py-1 text-[10.5px] font-medium text-gold">
+          <span className="shrink-0 rounded-full border border-gold bg-gold/25 px-2.5 py-1 text-[12.5px] font-bold text-gold-ink">
             {chart.dayStem} {ELEMENTS[chart.dayElement].ko}일간
           </span>
         </div>
 
-        <p className="mt-2.5 rounded-lg border border-white/8 bg-black/20 px-2.5 py-2 text-[11.5px] leading-relaxed text-slate-400">
-          <span className="font-medium text-slate-300">{DAY_MASTER_NOTE[chart.dayStem]}</span>
+        <p className="mt-3 rounded-xl border border-line bg-surface px-3 py-2.5 text-[13.5px] leading-relaxed text-ink-muted">
+          <span className="font-semibold text-ink-soft">{DAY_MASTER_NOTE[chart.dayStem]}</span>
           <br />
           {chart.season} · {chart.strength.label} (간이 지표)
         </p>
 
         {!profile.birth.timeKnown ? (
-          <p className="mt-2 text-[10.5px] leading-snug text-amber-200/70">
+          <p className="mt-2.5 text-[12.5px] font-medium leading-snug text-gold-ink">
             태어난 시간을 몰라 시주를 비웠습니다. 시주에 따라 달라지는 결혼·자식·말년 운은 따로 짚어 드려요.
           </p>
         ) : null}
@@ -82,13 +82,17 @@ export function SajuTab({
 
       {/* 사주 원국 */}
       <Card>
-        <SectionTitle title="사주 원국" hint="시 · 일 · 월 · 년 순서 · 위가 천간, 아래가 지지" right={<Chip tone="gold">일간 = 나</Chip>} />
+        <SectionTitle
+          title="사주 원국"
+          hint="시 · 일 · 월 · 년 순서 · 위가 천간, 아래가 지지"
+          right={<Chip tone="gold">일간 = 나</Chip>}
+        />
         <SajuGrid chart={chart} />
         <div className="mt-2.5 grid grid-cols-4 gap-1.5 text-center">
           {(['hour', 'day', 'month', 'year'] as const).map((key) => {
             const pillar = chart.pillars[key];
             return (
-              <span key={key} className="truncate text-[9.5px] text-slate-600">
+              <span key={key} className="truncate text-[11.5px] text-ink-faint">
                 {pillar ? pillar.nayin : '—'}
               </span>
             );
@@ -105,15 +109,15 @@ export function SajuTab({
       {/* 조후와 합충 */}
       <Card>
         <SectionTitle title="조후 · 합충" hint="계절의 기운과 글자 사이의 관계" />
-        <div className="space-y-2">
-          <div className="rounded-lg border border-white/8 bg-black/20 px-2.5 py-2">
-            <p className="text-[12px] font-medium text-slate-200">{chart.season}</p>
-            <p className="mt-0.5 text-[11px] leading-relaxed text-slate-500">{chart.seasonNote}</p>
+        <div className="space-y-2.5">
+          <div className="rounded-xl border border-line bg-surface-2 px-3 py-2.5">
+            <p className="text-[13.5px] font-semibold text-ink-soft">{chart.season}</p>
+            <p className="mt-1 text-[13px] leading-relaxed text-ink-muted">{chart.seasonNote}</p>
           </div>
           <div>
-            <p className="mb-1 text-[10.5px] font-medium text-slate-500">원국 합·충</p>
+            <p className="mb-1.5 text-[12.5px] font-semibold text-ink-faint">원국 합·충</p>
             {chart.interactions.length ? (
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1.5">
                 {chart.interactions.map((item, index) => (
                   <Chip key={`${item.pair}-${index}`} tone={KIND_TONE[item.kind] ?? 'neutral'}>
                     {item.pair}
@@ -121,13 +125,13 @@ export function SajuTab({
                 ))}
               </div>
             ) : (
-              <p className="text-[11px] text-slate-600">두드러지는 합·충이 없어 흐름이 단순한 편입니다.</p>
+              <p className="text-[13px] text-ink-faint">두드러지는 합·충이 없어 흐름이 단순한 편입니다.</p>
             )}
           </div>
           {chart.luckInteractions.length ? (
             <div>
-              <p className="mb-1 text-[10.5px] font-medium text-slate-500">대운·세운에서 걸리는 관계</p>
-              <div className="flex flex-wrap gap-1">
+              <p className="mb-1.5 text-[12.5px] font-semibold text-ink-faint">대운·세운에서 걸리는 관계</p>
+              <div className="flex flex-wrap gap-1.5">
                 {chart.luckInteractions.slice(0, 6).map((item, index) => (
                   <Chip key={`${item.pair}-${index}`} tone={KIND_TONE[item.kind] ?? 'neutral'}>
                     {item.scope} {item.pair}
@@ -173,24 +177,24 @@ export function SajuTab({
         <button
           type="button"
           onClick={onOpenChat}
-          className="flex flex-col items-start gap-1 rounded-2xl border border-white/10 bg-gradient-to-br from-violet-glow/25 to-white/[0.02] p-3 text-left active:scale-[0.985]"
+          className="flex flex-col items-start gap-1.5 rounded-2xl border border-[#ddd9fb] bg-gradient-to-br from-[#f2efff] to-surface p-3.5 text-left shadow-[0_1px_2px_rgba(17,24,39,0.04)] active:scale-[0.985]"
         >
-          <Icon name="chat" className="h-4 w-4 text-violet-300" />
-          <span className="text-[13px] font-semibold text-slate-100">AI 상담</span>
-          <span className="text-[10.5px] leading-snug text-slate-400">6단계 통변으로 풀어 보기</span>
+          <Icon name="chat" className="h-5 w-5 text-[#6d5ce0]" />
+          <span className="text-[15px] font-bold text-ink">AI 상담</span>
+          <span className="text-[12.5px] leading-snug text-ink-muted">6단계 통변으로 풀어 보기</span>
         </button>
         <button
           type="button"
           onClick={onOpenChoice}
-          className="flex flex-col items-start gap-1 rounded-2xl border border-white/10 bg-gradient-to-br from-gold/20 to-white/[0.02] p-3 text-left active:scale-[0.985]"
+          className="flex flex-col items-start gap-1.5 rounded-2xl border border-gold/60 bg-gradient-to-br from-[#fdf4e2] to-surface p-3.5 text-left shadow-[0_1px_2px_rgba(17,24,39,0.04)] active:scale-[0.985]"
         >
-          <Icon name="scales" className="h-4 w-4 text-gold" />
-          <span className="text-[13px] font-semibold text-slate-100">A vs B 시뮬레이터</span>
-          <span className="text-[10.5px] leading-snug text-slate-400">두 갈래 미래를 나란히</span>
+          <Icon name="scales" className="h-5 w-5 text-gold-ink" />
+          <span className="text-[15px] font-bold text-ink">A vs B 시뮬레이터</span>
+          <span className="text-[12.5px] leading-snug text-ink-muted">두 갈래 미래를 나란히</span>
         </button>
       </div>
 
-      <p className="pb-2 text-center text-[10px] leading-relaxed text-slate-600">
+      <p className="pb-2 text-center text-[11.5px] leading-relaxed text-ink-faint">
         사주는 정해진 운명이 아니라 지금의 기운을 읽는 지도입니다.
         <br />
         오행 {ELEMENT_ORDER.map((el) => `${ELEMENTS[el].ko}${chart.elementCounts[el]}`).join(' ')}

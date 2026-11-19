@@ -54,7 +54,7 @@ export function MarriageCard({
 
       {marriage.status === 'married' ? (
         <div>
-          <span className="mb-1 block text-[11px] font-medium tracking-wide text-slate-400">혼인일 (연·월·일)</span>
+          <span className="mb-1.5 block text-[13px] font-semibold tracking-wide text-ink-muted">혼인일 (연·월·일)</span>
           <div className="grid grid-cols-3 gap-1.5">
             <select
               className={selectClass}
@@ -90,21 +90,19 @@ export function MarriageCard({
               ))}
             </select>
           </div>
-          <p className="mt-1 text-[10.5px] text-slate-600">
-            혼인일은 배우자 인연의 시기를 함께 읽는 데 쓰입니다.
-          </p>
+          <p className="mt-1.5 text-[12px] text-ink-faint">혼인일은 배우자 인연의 시기를 함께 읽는 데 쓰입니다.</p>
         </div>
       ) : null}
 
-      <div className="rounded-xl border border-white/8 bg-black/20 p-2.5">
+      <div className="rounded-xl border border-line bg-surface-2 p-3">
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-[11px] font-medium tracking-wide text-slate-400">배우자 사주 연결</span>
+          <span className="text-[13px] font-semibold tracking-wide text-ink-muted">배우자 사주 연결</span>
           {partner ? <Chip tone="ok">연결됨</Chip> : <Chip>선택</Chip>}
         </div>
 
         {others.length > 0 ? (
           <select
-            className={cn(selectClass, 'mb-2 text-[13px]')}
+            className={cn(selectClass, 'mb-2 text-[15px]')}
             value={marriage.partnerProfileId ?? ''}
             onChange={(event) => {
               const value = event.target.value;
@@ -120,18 +118,18 @@ export function MarriageCard({
             ))}
           </select>
         ) : (
-          <p className="mb-2 text-[11px] leading-snug text-slate-600">
+          <p className="mb-2 text-[12.5px] leading-snug text-ink-faint">
             저장된 다른 프로필이 있으면 여기서 바로 고를 수 있어요.
           </p>
         )}
 
         <div className="flex gap-1.5">
-          <GhostButton className="flex-1 py-1.5 text-[12px]" onClick={() => setManualOpen(true)}>
+          <GhostButton className="flex-1 py-2 text-[13px]" onClick={() => setManualOpen(true)}>
             {marriage.partnerManual ? '배우자 정보 수정' : '직접 입력'}
           </GhostButton>
           {marriage.partnerProfileId || marriage.partnerManual ? (
             <GhostButton
-              className="py-1.5 text-[12px] text-rose-300"
+              className="py-2 text-[13px] text-rose-700"
               onClick={() => patch({ partnerProfileId: null, partnerManual: null })}
             >
               연결 해제
@@ -140,24 +138,24 @@ export function MarriageCard({
         </div>
 
         {partner && partnerChart ? (
-          <div className="mt-2.5 rounded-lg border border-white/8 bg-white/[0.03] p-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[12px] font-semibold text-slate-200">{partner.name || '배우자'}</span>
-              <span className="text-[10.5px] text-slate-500">
+          <div className="mt-3 rounded-lg border border-line bg-surface p-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[14px] font-bold text-ink">{partner.name || '배우자'}</span>
+              <span className="text-[12.5px] text-ink-faint">
                 {partner.birth.calendar === 'lunar' ? '음력' : '양력'} {partner.birth.year}.{pad(partner.birth.month)}.
                 {pad(partner.birth.day)}
               </span>
             </div>
-            <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-slate-400">
+            <div className="mt-2 flex items-center gap-1.5 text-[13px] text-ink-muted">
               {[partnerChart.pillars.year, partnerChart.pillars.month, partnerChart.pillars.day, partnerChart.pillars.hour]
                 .filter(Boolean)
                 .map((pillar, index) => (
-                  <span key={index} className="hanja rounded border border-white/10 px-1.5 py-0.5">
+                  <span key={index} className="hanja rounded border border-line bg-surface-2 px-1.5 py-0.5">
                     {pillar!.stem}
                     {pillar!.branch}
                   </span>
                 ))}
-              <span className="ml-auto text-[10px] text-slate-500">
+              <span className="ml-auto text-[12px] text-ink-faint">
                 일간 {partnerChart.dayStem} · {partnerChart.strength.label}
               </span>
             </div>

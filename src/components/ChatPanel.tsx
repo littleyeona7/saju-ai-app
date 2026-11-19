@@ -21,7 +21,7 @@ export function ChatBubble({
   if (isUser) {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[84%] rounded-2xl rounded-br-md bg-gradient-to-br from-gold/90 to-gold-deep/85 px-3.5 py-2.5 text-[13px] leading-relaxed text-ink-950 shadow-sm">
+        <div className="max-w-[84%] rounded-2xl rounded-br-md bg-gradient-to-br from-gold to-gold-deep px-4 py-3 text-[15.5px] font-medium leading-[1.65] text-on-gold shadow-[0_6px_18px_-14px_rgba(193,145,47,0.9)]">
           {message.text}
         </div>
       </div>
@@ -30,13 +30,15 @@ export function ChatBubble({
 
   return (
     <div className="flex flex-col items-start">
-      <div className="max-w-[92%] rounded-2xl rounded-bl-md border border-white/8 bg-white/[0.05] px-3.5 py-2.5">
+      <div className="max-w-[92%] rounded-2xl rounded-bl-md border border-line bg-surface px-4 py-3 shadow-[0_1px_2px_rgba(17,24,39,0.04)]">
         {message.error ? (
-          <p className="text-[12.5px] leading-relaxed text-rose-300">{message.error}</p>
+          <p className="text-[14.5px] leading-relaxed text-rose-700">{message.error}</p>
         ) : (
           <>
             <Markdown text={message.text} />
-            {streaming ? <span className="ml-0.5 inline-block h-3.5 w-1.5 animate-soft-pulse bg-gold align-middle" /> : null}
+            {streaming ? (
+              <span className="ml-0.5 inline-block h-4 w-1.5 animate-soft-pulse rounded-sm bg-gold-deep align-middle" />
+            ) : null}
           </>
         )}
       </div>
@@ -45,11 +47,11 @@ export function ChatBubble({
           type="button"
           onClick={onSpeak}
           className={cn(
-            'mt-1 flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10.5px] transition-colors',
-            speaking ? 'text-gold' : 'text-slate-500 active:bg-white/5',
+            'mt-1 flex items-center gap-1.5 rounded-md px-1.5 py-1 text-[12.5px] font-medium transition-colors',
+            speaking ? 'text-gold-ink' : 'text-ink-faint active:bg-surface-2',
           )}
         >
-          <Icon name={speaking ? 'volume' : 'mute'} className="h-3 w-3" />
+          <Icon name={speaking ? 'volume' : 'mute'} className="h-3.5 w-3.5" />
           {speaking ? '읽는 중' : '읽어 주기'}
         </button>
       ) : null}
@@ -81,7 +83,7 @@ export function Composer({
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = 'auto';
-    el.style.height = `${Math.min(el.scrollHeight, 132)}px`;
+    el.style.height = `${Math.min(el.scrollHeight, 144)}px`;
   }, []);
 
   useEffect(() => {
@@ -100,14 +102,14 @@ export function Composer({
   };
 
   return (
-    <div className="border-t border-white/8 bg-ink-950/85 px-3 pb-1 pt-2 backdrop-blur">
+    <div className="border-t border-line bg-surface/95 px-3 pb-1 pt-2.5 backdrop-blur">
       {speech.listening ? (
-        <div className="mb-1.5 flex items-center gap-1.5 rounded-lg bg-rose-500/10 px-2.5 py-1.5 text-[11px] text-rose-200">
-          <span className="h-1.5 w-1.5 animate-soft-pulse rounded-full bg-rose-400" />
+        <div className="mb-2 flex items-center gap-1.5 rounded-lg bg-rose-50 px-2.5 py-1.5 text-[12.5px] text-rose-700">
+          <span className="h-1.5 w-1.5 animate-soft-pulse rounded-full bg-rose-500" />
           듣고 있어요… {speech.interim ? `“${speech.interim}”` : '말씀해 주세요'}
         </div>
       ) : null}
-      {speech.error ? <p className="mb-1.5 text-[11px] text-rose-300">{speech.error}</p> : null}
+      {speech.error ? <p className="mb-2 text-[12.5px] text-rose-700">{speech.error}</p> : null}
 
       <div className="flex items-end gap-1.5">
         <button
@@ -118,13 +120,13 @@ export function Composer({
           }}
           aria-label="음성으로 말하기"
           className={cn(
-            'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-colors',
+            'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition-colors',
             speech.listening
-              ? 'animate-ring border-rose-400/50 bg-rose-500/20 text-rose-300'
-              : 'border-white/10 bg-white/5 text-slate-300 active:bg-white/10',
+              ? 'animate-ring border-rose-300 bg-rose-50 text-rose-600'
+              : 'border-line bg-surface-2 text-ink-muted active:bg-surface-3',
           )}
         >
-          <Icon name="mic" className="h-[18px] w-[18px]" />
+          <Icon name="mic" className="h-5 w-5" />
         </button>
 
         <textarea
@@ -139,7 +141,7 @@ export function Composer({
             }
           }}
           placeholder={placeholder}
-          className="no-scrollbar min-h-[42px] max-h-[132px] flex-1 resize-none overflow-y-auto rounded-xl border border-white/10 bg-black/30 px-3 py-[10px] text-[14px] leading-snug text-slate-100 placeholder:text-slate-600 focus:border-gold/50 focus:outline-none"
+          className="no-scrollbar min-h-[46px] max-h-[144px] flex-1 resize-none overflow-y-auto rounded-xl border border-line bg-surface-2 px-3.5 py-[11px] text-[16px] leading-snug text-ink placeholder:text-ink-faint focus:border-gold-deep focus:bg-surface focus:outline-none"
         />
 
         {streaming ? (
@@ -147,7 +149,7 @@ export function Composer({
             type="button"
             onClick={onStop}
             aria-label="멈추기"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-slate-200"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface-3 text-ink-soft"
           >
             <Icon name="stop" className="h-4 w-4" />
           </button>
@@ -157,9 +159,9 @@ export function Composer({
             onClick={submit}
             disabled={!value.trim() || disabled}
             aria-label="보내기"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gold to-gold-deep text-ink-950 disabled:opacity-35"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gold to-gold-deep text-on-gold shadow-[0_6px_18px_-12px_rgba(193,145,47,0.9)] disabled:opacity-40"
           >
-            <Icon name="send" className="h-[18px] w-[18px]" />
+            <Icon name="send" className="h-5 w-5" />
           </button>
         )}
       </div>
@@ -208,7 +210,7 @@ export function ChatList({
   return (
     <div ref={scrollRef} className="no-scrollbar flex-1 overflow-y-auto overscroll-contain px-3 py-3">
       {messages.length === 0 ? emptyState : null}
-      <div className="space-y-3">
+      <div className="space-y-3.5">
         {messages.map((message) => (
           <ChatBubble
             key={message.id}
@@ -230,11 +232,11 @@ export function ChatList({
 export function ErrorNotice({ error, onRetry }: { error: ChatError | null; onRetry?: () => void }) {
   if (!error) return null;
   return (
-    <div className="mx-3 mb-2 rounded-xl border border-rose-400/25 bg-rose-500/10 px-3 py-2.5">
-      <p className="text-[12px] font-medium text-rose-200">{error.message}</p>
-      {error.hint ? <p className="mt-0.5 text-[11px] leading-snug text-rose-300/80">{error.hint}</p> : null}
+    <div className="mx-3 mb-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5">
+      <p className="text-[14px] font-semibold text-rose-700">{error.message}</p>
+      {error.hint ? <p className="mt-1 text-[12.5px] leading-snug text-rose-600">{error.hint}</p> : null}
       {onRetry ? (
-        <button type="button" onClick={onRetry} className="mt-1.5 text-[11px] font-semibold text-rose-100 underline">
+        <button type="button" onClick={onRetry} className="mt-1.5 text-[12.5px] font-bold text-rose-700 underline">
           다시 시도
         </button>
       ) : null}

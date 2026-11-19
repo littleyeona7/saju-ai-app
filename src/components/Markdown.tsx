@@ -7,28 +7,28 @@ function inline(text: string, keyPrefix: string): ReactNode[] {
     const key = `${keyPrefix}-${index}`;
     if (token.startsWith('**') && token.endsWith('**')) {
       return (
-        <strong key={key} className="font-semibold text-slate-50">
+        <strong key={key} className="font-bold text-ink">
           {token.slice(2, -2)}
         </strong>
       );
     }
     if (token.startsWith('__') && token.endsWith('__')) {
       return (
-        <strong key={key} className="font-semibold text-slate-50">
+        <strong key={key} className="font-bold text-ink">
           {token.slice(2, -2)}
         </strong>
       );
     }
     if (token.startsWith('`') && token.endsWith('`')) {
       return (
-        <code key={key} className="rounded bg-white/10 px-1 py-0.5 text-[12px] text-gold">
+        <code key={key} className="rounded bg-surface-3 px-1 py-0.5 text-[0.92em] font-semibold text-gold-ink">
           {token.slice(1, -1)}
         </code>
       );
     }
     if ((token.startsWith('*') && token.endsWith('*')) || (token.startsWith('_') && token.endsWith('_'))) {
       return (
-        <em key={key} className="text-slate-300">
+        <em key={key} className="text-ink-muted">
           {token.slice(1, -1)}
         </em>
       );
@@ -56,9 +56,9 @@ export function Markdown({ text, className }: { text: string; className?: string
     if (heading) {
       const level = heading[1].length;
       const content = heading[2];
-      const size = level <= 2 ? 'text-[15px]' : level === 3 ? 'text-[14px]' : 'text-[13px]';
+      const size = level <= 2 ? 'text-[17px]' : level === 3 ? 'text-[16px]' : 'text-[15px]';
       blocks.push(
-        <h4 key={`h-${key++}`} className={cn('mt-1 mb-1 font-semibold text-gold', size)}>
+        <h4 key={`h-${key++}`} className={cn('mb-1.5 mt-2 font-bold text-gold-ink', size)}>
           {inline(content, `h${key}`)}
         </h4>,
       );
@@ -67,7 +67,7 @@ export function Markdown({ text, className }: { text: string; className?: string
     }
 
     if (/^(-{3,}|\*{3,})$/.test(line.trim())) {
-      blocks.push(<hr key={`hr-${key++}`} className="my-2.5 border-white/10" />);
+      blocks.push(<hr key={`hr-${key++}`} className="my-3 border-line" />);
       index += 1;
       continue;
     }
@@ -79,10 +79,10 @@ export function Markdown({ text, className }: { text: string; className?: string
         index += 1;
       }
       blocks.push(
-        <ul key={`ul-${key++}`} className="my-1 space-y-1 pl-1">
+        <ul key={`ul-${key++}`} className="my-1.5 space-y-1.5 pl-0.5">
           {items.map((item, itemIndex) => (
-            <li key={itemIndex} className="flex gap-1.5 text-[13px] leading-relaxed text-slate-200">
-              <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-gold/70" />
+            <li key={itemIndex} className="flex gap-2 text-[15.5px] leading-[1.7] text-ink-soft">
+              <span className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-gold-deep/70" />
               <span className="min-w-0">{inline(item, `li${key}-${itemIndex}`)}</span>
             </li>
           ))}
@@ -98,10 +98,10 @@ export function Markdown({ text, className }: { text: string; className?: string
         index += 1;
       }
       blocks.push(
-        <ol key={`ol-${key++}`} className="my-1 space-y-1 pl-1">
+        <ol key={`ol-${key++}`} className="my-1.5 space-y-1.5 pl-0.5">
           {items.map((item, itemIndex) => (
-            <li key={itemIndex} className="flex gap-1.5 text-[13px] leading-relaxed text-slate-200">
-              <span className="shrink-0 text-[11px] font-semibold text-gold/80">{itemIndex + 1}.</span>
+            <li key={itemIndex} className="flex gap-2 text-[15.5px] leading-[1.7] text-ink-soft">
+              <span className="shrink-0 text-[13.5px] font-bold leading-[1.85] text-gold-ink">{itemIndex + 1}.</span>
               <span className="min-w-0">{inline(item, `oli${key}-${itemIndex}`)}</span>
             </li>
           ))}
@@ -119,7 +119,7 @@ export function Markdown({ text, className }: { text: string; className?: string
       blocks.push(
         <blockquote
           key={`q-${key++}`}
-          className="my-1.5 border-l-2 border-gold/40 pl-2.5 text-[12.5px] leading-relaxed text-slate-400"
+          className="my-2 border-l-[3px] border-gold pl-3 text-[14.5px] leading-[1.7] text-ink-muted"
         >
           {inline(quoted.join(' '), `q${key}`)}
         </blockquote>,
@@ -141,7 +141,7 @@ export function Markdown({ text, className }: { text: string; className?: string
       index += 1;
     }
     blocks.push(
-      <p key={`p-${key++}`} className="my-1 text-[13px] leading-[1.65] text-slate-200">
+      <p key={`p-${key++}`} className="my-1.5 text-[15.5px] leading-[1.75] text-ink-soft">
         {inline(paragraph.join(' '), `p${key}`)}
       </p>,
     );
