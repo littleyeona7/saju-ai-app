@@ -55,8 +55,18 @@ AI 상담과 A vs B 비교는 Gemini API를 브라우저에서 직접 호출합�
 
 ## 배포
 
-`main` 브랜치에 푸시하면 `.github/workflows/deploy.yml` 이 검증 → 빌드 → GitHub Pages 배포를 수행합니다.
+이 저장소의 GitHub Pages는 **`gh-pages` 브랜치(레거시 빌드)** 를 소스로 사용합니다.
+빌드 결과물을 `gh-pages` 브랜치에 올리면 Pages가 그대로 서빙합니다.
+
+```bash
+./deploy/deploy.sh     # 검증 → 빌드 → gh-pages 강제 푸시
+```
+
 `vite.config.ts` 의 `base` 는 저장소 이름과 동일한 `/saju-ai-app/` 입니다.
+
+> `.github/workflows/deploy.yml` 방식의 CI 배포를 쓰고 싶다면 `deploy/github-pages-deploy.yml` 을
+> `.github/workflows/` 로 복사해 두면 됩니다. (연결된 GitHub App에는 `workflows` 권한이 없어
+> 에이전트가 워크플로 파일을 직접 푸시할 수는 없습니다.)
 
 ## 데이터
 

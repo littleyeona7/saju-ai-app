@@ -62,6 +62,7 @@ export function BirthForm({
   const [timeKnown, setTimeKnown] = useState(base.timeKnown);
   const [hour, setHour] = useState(base.hour);
   const [minute, setMinute] = useState(base.minute);
+  const [timeValue, setTimeValue] = useState(`${pad(base.hour)}:${pad(base.minute)}`);
   const [save, setSave] = useState(defaultSave);
   const [error, setError] = useState<string | null>(null);
 
@@ -209,11 +210,22 @@ export function BirthForm({
         {timeKnown ? (
           <input
             type="time"
-            value={`${pad(hour)}:${pad(minute)}`}
+            value={timeValue}
             onChange={(event) => {
-              const [h, m] = event.target.value.split(':').map(Number);
-              if (Number.isFinite(h)) setHour(h);
-              if (Number.isFinite(m)) setMinute(m);
+              const next = event.target.value;
+              setTimeValue(next);
+              const matched = next.match(/^(\d{1,2}):(\d{2})/);
+              if (matched) {
+                setHour(Number(matched[1]));
+                setMinute(Number(matched[2]));
+              }
+            }}
+            onBlur={() => {
+              if (!timeValue) {
+                setTimeValue('12:00');
+                setHour(12);
+                setMinute(0);
+              }
             }}
             className={cn(inputClass, 'mt-2.5 text-center tabular-nums')}
           />
