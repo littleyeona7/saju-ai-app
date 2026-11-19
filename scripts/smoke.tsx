@@ -7,6 +7,7 @@ import { createElement } from 'react';
 import App from '../src/App';
 import { ChatTab } from '../src/components/ChatTab';
 import { ChoiceTab } from '../src/components/ChoiceTab';
+import { SajuTab } from '../src/components/SajuTab';
 import { SettingsModal } from '../src/components/SettingsModal';
 import { buildChart } from '../src/lib/saju';
 import type { Profile, Settings } from '../src/types';
@@ -93,6 +94,29 @@ check('대운 표시', sajuHtml.includes('대운'));
 check('결혼·배우자 카드', sajuHtml.includes('배우자'));
 check('프로필 이름', sajuHtml.includes('최연우'));
 check('저장된 프로필 1/10 표시', sajuHtml.includes('1/10'));
+
+// 19:35 (술시) 사주가 그리드에 그대로 나오는지
+const evening = buildChart({ ...profile.birth, hour: 19, minute: 35 });
+const eveningHtml = render(
+  createElement(SajuTab, {
+    profile: { ...profile, birth: { ...profile.birth, hour: 19, minute: 35 } },
+    chart: evening,
+    profiles: [profile],
+    activeId: profile.id,
+    onSelectProfile: () => {},
+    onDeleteProfile: () => {},
+    onAddProfile: () => {},
+    onMarriageChange: () => {},
+    onOpenChat: () => {},
+    onOpenChoice: () => {},
+  }),
+);
+check(
+  '19:35 → 시주 甲戌 이 그리드에 그려진다',
+  evening.pillars.hour?.stem === '甲' && evening.pillars.hour?.branch === '戌' && eveningHtml.includes('>甲<') && eveningHtml.includes('>戌<'),
+);
+check('19:35 → 오행 토5', evening.elementCounts.earth === 5);
+check('시각 표기', eveningHtml.includes('19:35'));
 
 console.log('\n[3] AI 상담 화면');
 const chatHtml = render(
