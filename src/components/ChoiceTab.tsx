@@ -1,9 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
-import type { Profile, ProfileNote, Settings } from '../types';
-import { DAY_MASTER_NOTE, type Chart } from '../lib/saju';
+import type { Profile, Settings } from '../types';
+import type { Chart } from '../lib/saju';
 import { buildComparisonSystemPrompt, buildComparisonUserPrompt } from '../lib/prompts';
 import { useGeminiChat } from '../hooks/useGeminiChat';
-import { useMemoryLearning } from '../hooks/useMemoryLearning';
 import { useSpeechOutput } from '../hooks/useSpeech';
 import { Markdown } from './Markdown';
 import { ChatBubble, Composer, ErrorNotice } from './ChatPanel';
@@ -52,13 +51,11 @@ export function ChoiceTab({
   chart,
   partner,
   settings,
-  onAddNotes,
 }: {
   profile: Profile;
   chart: Chart;
-  partner: { name: string; chart: Chart; notes?: ProfileNote[] } | null;
+  partner: { name: string; chart: Chart } | null;
   settings: Settings;
-  onAddNotes: (notes: ProfileNote[]) => void;
 }) {
   const [crossroad, setCrossroad] = useState('');
   const [optionA, setOptionA] = useState('');
@@ -73,44 +70,21 @@ export function ChoiceTab({
     [profile, chart, partner],
   );
 
-  const memoryContext = useMemo(() => {
-    const thisYear = chart.seun.find((s) => s.current);
-    return [
-      `${profile.birth.name || '이름 없음'} · ${profile.birth.gender === 'male' ? '남성' : '여성'} · 만 ${chart.age}세`,
-      `일간 ${chart.dayStem}(${DAY_MASTER_NOTE[chart.dayStem]?.split('·')[0] ?? ''})`,
-      chart.currentDaewun ? `현재 대운 ${chart.currentDaewun.ganzhi}` : '',
-      thisYear ? `${thisYear.year}년 세운 ${thisYear.ganzhi}` : '',
-    ]
-      .filter(Boolean)
-      .join(' · ');
-  }, [chart, profile.birth.gender, profile.birth.name]);
-
-  const memory = useMemoryLearning({
-    apiKey: settings.apiKey,
-    model: settings.model,
-    profile,
-    context: memoryContext,
-    onLearn: onAddNotes,
-  });
-
   const chat = useGeminiChat({
     apiKey: settings.apiKey,
     model: settings.model,
     systemInstruction,
-    onDone: (answer, _id, question) => {
-      memory.learn({ question, answer, topic: 'A vs B 비교' });
-    },
   });
 
-  // 이어서 묻는 질문도 주제에 맞는 명리 기준을 함께 넣는다.
+  const speech = useSpeechOutput(settings.speechRate);
+
+  // 이어서 묻는 질문에도 그 주제에 맞는 명리 기준을 함께 넣는다.
   const sendFollowUp = useCallback(
     (text: string) => {
       void chat.send(text, buildComparisonSystemPrompt(profile, chart, partner, text));
     },
     [chat, chart, partner, profile],
   );
-
-  const speech = useSpeechOutput(settings.speechRate);
 
   const comparisonMessage = chat.messages.find((message) => message.role === 'assistant');
   const comparisonText = comparisonMessage?.text ?? '';
@@ -162,11 +136,6 @@ export function ChoiceTab({
               <p className="mt-1.5 text-[14px] leading-relaxed text-ink-muted">
                 지금 고민하는 갈림길을 적으면, 두 선택의 1·3·5년 뒤를 사주로 나란히 펼쳐 드려요.
               </p>
-              {profile.notes?.length ? (
-                <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-gold/60 bg-gold/15 px-2.5 py-1 text-[12.5px] font-semibold text-gold-ink">
-                  <span aria-hidden="true">🧠</span> 지난 상담에서 기억한 {profile.notes.length}건도 함께 봅니다
-                </p>
-              ) : null}
             </div>
 
             <Card className="space-y-3.5">

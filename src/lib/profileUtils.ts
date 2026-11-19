@@ -41,11 +41,7 @@ export function partnerChartOf(profile: Profile, profiles: Profile[]) {
   const partner = partnerBirthOf(profile, profiles);
   if (!partner) return null;
   try {
-    // 연결된 저장 프로필이면 그 사람의 기억도 함께 넘겨 궁합 상담에 반영한다.
-    const linked = profile.marriage.partnerProfileId
-      ? profiles.find((item) => item.id === profile.marriage.partnerProfileId)
-      : null;
-    return { name: partner.name, chart: buildChart(partner.birth), notes: linked?.notes ?? [] };
+    return { name: partner.name, chart: buildChart(partner.birth) };
   } catch {
     return null;
   }

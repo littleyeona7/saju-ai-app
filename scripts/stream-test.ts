@@ -4,6 +4,14 @@
  */
 import { GeminiError, streamGemini } from '../src/lib/gemini';
 import { parseComparison } from '../src/components/ChoiceTab';
+import {
+  CLASSICS_REFERENCE,
+  buildChatSystemPrompt,
+  buildClassicsReference,
+  buildComparisonSystemPrompt,
+} from '../src/lib/prompts';
+import { buildChart } from '../src/lib/saju';
+import type { Profile } from '../src/types';
 
 let passed = 0;
 let failed = 0;
@@ -372,6 +380,55 @@ async function main() {
 
   const plain = parseComparison('마커 없이 답한 경우', true);
   check('마커 없으면 전체를 A로', plain.hasMarkers === false && plain.a === '마커 없이 답한 경우');
+
+  console.log('\n[6] 명리 고전 기준 — 상담·A vs B 프롬프트에 주제 맞춤으로 들어간다');
+  check('기본 모듈: 격국·용신 균형', CLASSICS_REFERENCE.includes('격국·용신 균형'));
+  check('기본 모듈: 궁합·배우자궁', CLASSICS_REFERENCE.includes('궁합·배우자궁'));
+  check('기본 모듈: 재물(식상생재·재다신약)', CLASSICS_REFERENCE.includes('식상생재') && CLASSICS_REFERENCE.includes('재다신약'));
+  check('기본 모듈: 건강(오행 편중)', CLASSICS_REFERENCE.includes('오행 편중'));
+  check('기본 모듈: 대운·세운', CLASSICS_REFERENCE.includes('대운은 10년의 배경'));
+  check('모듈은 간결하다 (3,000자 이하)', CLASSICS_REFERENCE.length < 3000, String(CLASSICS_REFERENCE.length));
+
+  const careerRules = buildClassicsReference('이직해도 될까?');
+  check('직업 질문에는 직업 기준이 붙는다', careerRules.includes('[이 질문에 특히 맞는 기준]') && careerRules.includes('직업운은 관성'));
+  check('직업 질문에는 재물 기준이 붙지 않는다', !careerRules.includes('재다신약이면'));
+  const moneyRules = buildClassicsReference('돈은 언제 들어와?');
+  check('재물 질문에는 재물 기준이 붙는다', moneyRules.includes('식상(돈이 들어오는 통로)'));
+  const healthRules = buildClassicsReference('요즘 건강이 안 좋아');
+  check('건강 질문에는 건강 기준이 붙는다', healthRules.includes('진단이나 치료를 대신하지 않는다'));
+  const timingRules = buildClassicsReference('언제 움직이는 게 좋을까?');
+  check('시기 질문에는 시기 기준이 붙는다', timingRules.includes('세운이 그 글자를 채우는 해'));
+  check('주제를 모르면 기본 모듈만', buildClassicsReference('안녕하세요') === CLASSICS_REFERENCE);
+
+  const promptProfile: Profile = {
+    id: 'prompt-profile',
+    birth: {
+      name: '최연우',
+      calendar: 'solar',
+      year: 1985,
+      month: 7,
+      day: 19,
+      leapMonth: false,
+      timeKnown: true,
+      hour: 19,
+      minute: 35,
+      gender: 'female',
+    },
+    marriage: { status: 'married', date: { year: 2015, month: 5, day: 20 }, partnerProfileId: null, partnerManual: null },
+    createdAt: 0,
+    updatedAt: 0,
+  };
+  const promptChart = buildChart(promptProfile.birth);
+  const chatPrompt = buildChatSystemPrompt(promptProfile, promptChart, null, '올해 이직해도 될까?');
+  check('상담 프롬프트에 고전 기준이 들어간다', chatPrompt.includes('격국·용신 균형'));
+  check('상담 프롬프트에 질문 주제 기준이 들어간다', chatPrompt.includes('직업운은 관성'));
+  check('상담 프롬프트에 원국 데이터가 그대로', chatPrompt.includes('乙丑 癸未 己未 甲戌'));
+  check('상담 프롬프트에 6단계 통변이 유지된다', chatPrompt.includes('[통변 6단계 순서]') && chatPrompt.includes('[답변 형식]'));
+
+  const comparisonPrompt = buildComparisonSystemPrompt(promptProfile, promptChart, null, '이직 vs 유지');
+  check('A vs B 프롬프트에 고전 기준이 들어간다', comparisonPrompt.includes('격국·용신 균형'));
+  check('A vs B 출력 형식이 유지된다', comparisonPrompt.includes('[[A]]') && comparisonPrompt.includes('[[C]]'));
+  check('대화 기억 주입 구획은 없다 (기능 제거)', !chatPrompt.includes('[이미 배운 사실') && !comparisonPrompt.includes('[이미 배운 사실'));
 
   globalThis.setFetch(originalFetch);
   console.log(`\n결과: ${passed}개 통과, ${failed}개 실패\n`);

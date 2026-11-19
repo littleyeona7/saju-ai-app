@@ -4,10 +4,9 @@
  */
 import { DAY_MASTER_NOTE, ELEMENTS, ELEMENT_ORDER, type Chart, type LuckPillar } from './saju';
 import { hanjaToHangul } from './utils';
-import { buildMemoryBlock } from './memory';
-import type { MarriageInfo, Profile, ProfileNote } from '../types';
+import type { MarriageInfo, Profile } from '../types';
 
-type Partner = { name: string; chart: Chart; notes?: ProfileNote[] };
+type Partner = { name: string; chart: Chart };
 export const BASE_SYSTEM_PROMPT = `너는 사주명리학(자평명리학, 적천수, 궁통보감 원리 기반)에 정통한 따뜻하고 현실적인 AI 사주 상담가다.
 
 [절대 원칙]
@@ -220,7 +219,7 @@ const COMPARISON_ATTITUDE = `[비교 모드 태도]
 
 /**
  * 두 모드가 같은 재료를 같은 순서로 쓴다:
- * 기본 원칙 → 답변 형식 → 주제 맞춤 고전 기준 → 계산된 사주 데이터 → 이미 배운 사실 → 모드별 태도
+ * 기본 원칙 → 답변 형식 → 주제 맞춤 고전 기준 → 계산된 사주 데이터 → 모드별 태도
  */
 function assemblePrompt(
   mode: 'chat' | 'comparison',
@@ -234,10 +233,8 @@ function assemblePrompt(
     mode === 'chat' ? CHAT_FORMATTING_RULES : COMPARISON_FORMAT,
     buildClassicsReference(question),
     buildSajuDataBlock(profile, chart, partner),
+    mode === 'chat' ? CHAT_ATTITUDE : COMPARISON_ATTITUDE,
   ];
-  const memory = buildMemoryBlock(profile.notes, partner ? { name: partner.name, notes: partner.notes } : null);
-  if (memory) sections.push(memory);
-  sections.push(mode === 'chat' ? CHAT_ATTITUDE : COMPARISON_ATTITUDE);
   return sections.join('\n\n');
 }
 

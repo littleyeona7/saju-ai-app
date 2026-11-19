@@ -1,12 +1,10 @@
-import { useCallback, useMemo, useState } from 'react';
-import type { Profile, ProfileNote, Settings } from '../types';
+import { useCallback, useMemo } from 'react';
+import type { Profile, Settings } from '../types';
 import { DAY_MASTER_NOTE, type Chart } from '../lib/saju';
 import { buildChatSystemPrompt } from '../lib/prompts';
 import { useGeminiChat } from '../hooks/useGeminiChat';
-import { useMemoryLearning } from '../hooks/useMemoryLearning';
 import { ChatList, Composer, ErrorNotice } from './ChatPanel';
-import { MemoryList } from './MemoryPanel';
-import { GhostButton, Icon, Sheet } from './ui';
+import { GhostButton, Icon } from './ui';
 import { cn } from '../lib/utils';
 
 const SUGGESTIONS = [
@@ -24,59 +22,28 @@ export function ChatTab({
   settings,
   onOpenSettings,
   onToggleAutoRead,
-  onAddNotes,
-  onDeleteNote,
 }: {
   profile: Profile;
   chart: Chart;
-  partner: { name: string; chart: Chart; notes?: ProfileNote[] } | null;
+  partner: { name: string; chart: Chart } | null;
   settings: Settings;
   onOpenSettings: () => void;
   onToggleAutoRead: (value: boolean) => void;
-  onAddNotes: (notes: ProfileNote[]) => void;
-  onDeleteNote: (noteId: string) => void;
 }) {
-  const [memoryOpen, setMemoryOpen] = useState(false);
-
   const systemInstruction = useMemo(
     () => buildChatSystemPrompt(profile, chart, partner),
     [profile, chart, partner],
   );
 
-  // 기억 추출에는 사주 전체 대신 짧은 맥락만 넘긴다.
-  const memoryContext = useMemo(() => {
-    const year = chart.seun.find((s) => s.current)?.year;
-    return [
-      `${profile.birth.name || '이름 없음'} · ${profile.birth.gender === 'male' ? '남성' : '여성'} · 만 ${chart.age}세`,
-      `일간 ${chart.dayStem}(${DAY_MASTER_NOTE[chart.dayStem]?.split('·')[0] ?? ''})`,
-      chart.currentDaewun ? `현재 대운 ${chart.currentDaewun.ganzhi}` : '',
-      year ? `${year}년 세운 ${chart.seun.find((s) => s.current)?.ganzhi}` : '',
-    ]
-      .filter(Boolean)
-      .join(' · ');
-  }, [chart, profile.birth.gender, profile.birth.name]);
-
-  const memory = useMemoryLearning({
-    apiKey: settings.apiKey,
-    model: settings.model,
-    profile,
-    context: memoryContext,
-    onLearn: onAddNotes,
-  });
-
   const chat = useGeminiChat({
     apiKey: settings.apiKey,
     model: settings.model,
     systemInstruction,
-    onDone: (answer, _id, question) => {
-      // 답변 표시가 끝난 뒤 조용히 배운다 (상담을 막지 않는다).
-      memory.learn({ question, answer, topic: 'AI 상담' });
-    },
   });
 
+  // 질문 주제(재물·직업·인연·건강·시기)에 맞는 명리 기준까지 넣어 보낸다.
   const send = useCallback(
     (text: string) => {
-      // 이번 질문 주제에 맞는 명리 기준까지 반영한 프롬프트로 보낸다.
       void chat.send(text, buildChatSystemPrompt(profile, chart, partner, text));
     },
     [chat, chart, partner, profile],
@@ -84,7 +51,6 @@ export function ChatTab({
 
   const displayName = profile.birth.name || '연우';
   const hasKey = Boolean(settings.apiKey.trim());
-  const noteCount = profile.notes?.length ?? 0;
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -101,25 +67,6 @@ export function ChatTab({
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => setMemoryOpen(true)}
-            aria-label="AI가 기억한 내용 보기"
-            className={cn(
-              'flex shrink-0 items-center gap-0.5 whitespace-nowrap rounded-lg border px-2 py-2 text-[12px] font-semibold transition-colors',
-              noteCount
-                ? 'border-gold bg-gold/20 text-gold-ink'
-                : 'border-line bg-surface text-ink-faint',
-            )}
-          >
-            <span aria-hidden="true" className="text-[13px] leading-none">
-              🧠
-            </span>
-            기억 {noteCount}건
-            {memory.learning ? (
-              <span className="h-1.5 w-1.5 animate-soft-pulse rounded-full bg-gold-deep" aria-label="배우는 중" />
-            ) : null}
-          </button>
           <button
             type="button"
             onClick={() => {
@@ -174,27 +121,6 @@ export function ChatTab({
               </div>
             </div>
 
-            {noteCount ? (
-              <button
-                type="button"
-                onClick={() => setMemoryOpen(true)}
-                className="flex w-full items-start gap-2 rounded-2xl border border-line bg-surface p-3.5 text-left active:bg-surface-2"
-              >
-                <span aria-hidden="true" className="text-[15px] leading-none">
-                  🧠
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-[14px] font-bold text-ink">
-                    지난 상담에서 기억한 것 {noteCount}건
-                  </span>
-                  <span className="mt-1 block truncate text-[12.5px] text-ink-muted">
-                    {profile.notes?.[profile.notes.length - 1]?.text}
-                  </span>
-                </span>
-                <Icon name="chevron" className="mt-0.5 h-4 w-4 shrink-0 text-ink-faint" />
-              </button>
-            ) : null}
-
             {!hasKey ? (
               <div className="rounded-2xl border border-gold/60 bg-[#fdf6e7] p-4">
                 <p className="flex items-center gap-1.5 text-[14.5px] font-bold text-gold-ink">
@@ -225,25 +151,6 @@ export function ChatTab({
         }
       />
 
-      {memory.justLearned.length ? (
-        <div className="mx-3 mb-2 flex items-start gap-2 rounded-xl border border-gold/50 bg-gold/10 px-3 py-2">
-          <span aria-hidden="true" className="mt-0.5 text-[13px] leading-none">
-            🧠
-          </span>
-          <p className="min-w-0 flex-1 text-[12.5px] leading-relaxed text-gold-ink">
-            새로 기억했어요 — {memory.justLearned.join(' · ')}
-          </p>
-          <button
-            type="button"
-            aria-label="기억 알림 닫기"
-            onClick={memory.clearJustLearned}
-            className="shrink-0 rounded-md p-1 text-gold-ink"
-          >
-            <Icon name="close" className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      ) : null}
-
       <ErrorNotice error={chat.error} onRetry={() => chat.clearError()} />
       <Composer
         onSend={send}
@@ -252,18 +159,6 @@ export function ChatTab({
         disabled={!hasKey}
         placeholder={hasKey ? '고민을 편하게 말해 보세요' : '설정에서 API 키를 먼저 넣어 주세요'}
       />
-
-      <Sheet open={memoryOpen} onClose={() => setMemoryOpen(false)} title="AI가 기억한 것">
-        <p className="mb-3 text-[13px] leading-relaxed text-ink-faint">
-          {displayName} 님과의 상담에서 배운 사실이에요. 다음 상담과 A vs B 비교에 자동으로 반영됩니다.
-          지운 기억은 다음 답변부터 쓰지 않아요. 이 기기에만 저장됩니다.
-        </p>
-        <MemoryList
-          notes={profile.notes}
-          onDelete={onDeleteNote}
-          emptyHint="아직 배운 내용이 없어요. 상담에서 결혼·일·건강 같은 실제 이야기를 나누면 여기에 하나씩 쌓입니다."
-        />
-      </Sheet>
     </div>
   );
 }

@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { BirthInput, MarriageInfo, Profile, ProfileNote, Settings } from './types';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { BirthInput, MarriageInfo, Profile, Settings } from './types';
 import { buildChart, type Chart } from './lib/saju';
 import { createProfile, partnerChartOf } from './lib/profileUtils';
-import { mergeNotes, removeNote } from './lib/memory';
 import {
   loadActiveId,
   loadProfiles,
@@ -36,10 +35,6 @@ export default function App() {
   const [settings, setSettings] = useState<Settings>(() => loadSettings());
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-
-  // 비동기(기억 추출) 결과가 몇 초 뒤에 도착해도 최신 목록에 합치도록 최신값을 들고 있는다.
-  const profilesRef = useRef<Profile[]>(profiles);
-  profilesRef.current = profiles;
 
   const current = useMemo(() => {
     const stored = profiles.find((profile) => profile.id === activeId);
@@ -110,42 +105,6 @@ export default function App() {
       }
     },
     [current, persistProfiles, profiles],
-  );
-
-  /** 저장된 프로필이면 저장소까지, 아직 저장 전 초안이면 그 초안만 고친다. */
-  const applyToProfile = useCallback((profileId: string, update: (profile: Profile) => Profile) => {
-    const latest = profilesRef.current;
-    if (!latest.some((profile) => profile.id === profileId)) {
-      setDraft((prev) => (prev && prev.id === profileId ? update(prev) : prev));
-      return;
-    }
-    const next = latest.map((profile) => (profile.id === profileId ? update(profile) : profile));
-    profilesRef.current = next;
-    setProfiles(next);
-    saveProfiles(next);
-  }, []);
-
-  const handleAddNotes = useCallback(
-    (profileId: string, notes: ProfileNote[]) => {
-      if (!notes.length) return;
-      applyToProfile(profileId, (profile) => ({
-        ...profile,
-        notes: mergeNotes(profile.notes, notes),
-        updatedAt: Date.now(),
-      }));
-    },
-    [applyToProfile],
-  );
-
-  const handleDeleteNote = useCallback(
-    (profileId: string, noteId: string) => {
-      applyToProfile(profileId, (profile) => ({
-        ...profile,
-        notes: removeNote(profile.notes, noteId),
-        updatedAt: Date.now(),
-      }));
-    },
-    [applyToProfile],
   );
 
   const handleSelectProfile = useCallback(
@@ -304,7 +263,6 @@ export default function App() {
               onMarriageChange={(marriage: MarriageInfo) => handleUpdateCurrent({ marriage })}
               onOpenChat={() => setTab('chat')}
               onOpenChoice={() => setTab('choice')}
-              onDeleteNote={(noteId) => handleDeleteNote(current.id, noteId)}
             />
           </div>
         ) : tab === 'chat' ? (
@@ -316,8 +274,6 @@ export default function App() {
             settings={settings}
             onOpenSettings={() => setSettingsOpen(true)}
             onToggleAutoRead={toggleAutoRead}
-            onAddNotes={(notes) => handleAddNotes(current.id, notes)}
-            onDeleteNote={(noteId) => handleDeleteNote(current.id, noteId)}
           />
         ) : (
           <ChoiceTab
@@ -326,7 +282,6 @@ export default function App() {
             chart={chartState.chart!}
             partner={partner}
             settings={settings}
-            onAddNotes={(notes) => handleAddNotes(current.id, notes)}
           />
         )}
       </main>

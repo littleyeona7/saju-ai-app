@@ -1,6 +1,5 @@
 import type { Profile, Settings } from '../types';
 import { DEFAULT_MODEL, MAX_PROFILES, migrateModel } from '../constants';
-import { sanitizeNotes } from './memory';
 
 const PROFILES_KEY = 'saju.profiles.v1';
 const ACTIVE_KEY = 'saju.activeProfile.v1';
@@ -26,11 +25,7 @@ function isProfile(value: unknown): value is Profile {
 export function loadProfiles(): Profile[] {
   const parsed = safeParse<unknown>(localStorage.getItem(PROFILES_KEY));
   if (!Array.isArray(parsed)) return [];
-  return parsed
-    .filter(isProfile)
-    .slice(0, MAX_PROFILES)
-    // 예전에 저장한 프로필에는 notes가 없거나 깨져 있을 수 있어 항상 다듬는다.
-    .map((profile) => ({ ...profile, notes: sanitizeNotes(profile.notes) }));
+  return parsed.filter(isProfile).slice(0, MAX_PROFILES);
 }
 
 export function saveProfiles(profiles: Profile[]): void {
