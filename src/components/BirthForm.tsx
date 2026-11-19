@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { BirthInput, CalendarType, Gender } from '../types';
 import { Field, PrimaryButton, Segmented, Toggle, inputClass, selectClass } from './ui';
 import { cn } from '../lib/utils';
@@ -62,7 +62,7 @@ export function BirthForm({
   const [timeKnown, setTimeKnown] = useState(base.timeKnown);
   const [hour, setHour] = useState(base.hour);
   const [minute, setMinute] = useState(base.minute);
-  const [timeValue, setTimeValue] = useState(`${pad(base.hour)}:${pad(base.minute)}`);
+  const timeRef = useRef<HTMLInputElement | null>(null);
   const [save, setSave] = useState(defaultSave);
   const [error, setError] = useState<string | null>(null);
 
@@ -209,20 +209,15 @@ export function BirthForm({
         />
         {timeKnown ? (
           <input
+            ref={timeRef}
             type="time"
-            value={timeValue}
+            defaultValue={`${pad(base.hour)}:${pad(base.minute)}`}
             onChange={(event) => {
-              const next = event.target.value;
-              setTimeValue(next);
-              const matched = next.match(/^(\d{1,2}):(\d{2})/);
+              const matched = event.target.value.match(/^(\d{1,2}):(\d{2})/);
               if (matched) {
                 setHour(Number(matched[1]));
                 setMinute(Number(matched[2]));
-              }
-            }}
-            onBlur={() => {
-              if (!timeValue) {
-                setTimeValue('12:00');
+              } else {
                 setHour(12);
                 setMinute(0);
               }
