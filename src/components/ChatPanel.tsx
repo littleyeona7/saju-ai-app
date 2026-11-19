@@ -139,7 +139,7 @@ export function Composer({
             }
           }}
           placeholder={placeholder}
-          className="min-h-[40px] max-h-[132px] flex-1 resize-none rounded-xl border border-white/10 bg-black/30 px-3 py-[10px] text-[14px] leading-snug text-slate-100 placeholder:text-slate-600 focus:border-gold/50 focus:outline-none"
+          className="no-scrollbar min-h-[42px] max-h-[132px] flex-1 resize-none overflow-y-auto rounded-xl border border-white/10 bg-black/30 px-3 py-[10px] text-[14px] leading-snug text-slate-100 placeholder:text-slate-600 focus:border-gold/50 focus:outline-none"
         />
 
         {streaming ? (

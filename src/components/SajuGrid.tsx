@@ -28,9 +28,7 @@ function StemCell({ pillar, highlight }: { pillar: Pillar | null; highlight?: bo
       style={elementStyle(pillar.stemElement)}
     >
       {highlight ? (
-        <span className="absolute -top-2 rounded-full bg-gold px-1.5 py-0.5 text-[9px] font-bold tracking-wide text-ink-950">
-          일간 · 나
-        </span>
+        <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-gold" />
       ) : null}
       <span className="text-[10px] font-medium opacity-80">{pillar.stemSipsin}</span>
       <span className="hanja text-[30px] font-semibold leading-none tracking-tight">{pillar.stem}</span>
