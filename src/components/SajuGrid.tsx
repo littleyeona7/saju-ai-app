@@ -92,10 +92,11 @@ export function SajuGrid({ chart }: { chart: Chart }) {
         ))}
       </div>
 
-      <div className="my-1.5 flex items-center justify-center">
-        <span className="text-[10.5px] tracking-[0.3em] text-ink-faint">천 간 · 지 지</span>
+      <div className="my-2.5 flex items-center gap-2.5">
+        <span className="h-px flex-1 bg-line" />
+        <span className="text-[10.5px] tracking-[0.25em] text-ink-faint">천 간 · 지 지</span>
+        <span className="h-px flex-1 bg-line" />
       </div>
-
       {/* 지지 (아랫줄) */}
       <div className="grid grid-cols-4 gap-1.5">
         {columns.map((column) => (
