@@ -132,6 +132,37 @@
   }
 }
 
+/* 라이트 테마용 슬라이더 (기본 트랙이 어둡게 보이지 않도록) */
+input[type="range"].range-gold {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-surface-3);
+  box-shadow: inset 0 0 0 1px var(--color-line);
+  cursor: pointer;
+}
+
+input[type="range"].range-gold::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: var(--color-gold-deep);
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(17, 24, 39, 0.25);
+}
+
+input[type="range"].range-gold::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: var(--color-gold-deep);
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(17, 24, 39, 0.25);
+}
+
 @keyframes fade-up {
   from {
     opacity: 0;

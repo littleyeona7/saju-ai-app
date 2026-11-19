@@ -143,7 +143,7 @@ export function ChoiceTab({
               <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                 <div className="rounded-xl border border-[#d9d2fb] bg-[#f4f1ff] p-3">
                   <span className="mb-1.5 flex items-center gap-1.5 text-[13px] font-bold text-[#5b47c9]">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#d9d2fb] text-[11.5px] font-bold text-[#43339f]">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#7c6cf0] text-[11.5px] font-bold text-white">
                       A
                     </span>
                     선택지 A
@@ -158,7 +158,7 @@ export function ChoiceTab({
                 </div>
                 <div className="rounded-xl border border-[#bfe6dc] bg-[#eefaf6] p-3">
                   <span className="mb-1.5 flex items-center gap-1.5 text-[13px] font-bold text-[#0f766e]">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#bfe6dc] text-[11.5px] font-bold text-[#0b5d56]">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#14b8a6] text-[11.5px] font-bold text-white">
                       B
                     </span>
                     선택지 B
@@ -397,13 +397,13 @@ function ComparisonCard({
           border: 'border-[#d9d2fb]',
           bg: 'bg-[#f6f3ff]',
           text: 'text-[#5040b0]',
-          badge: 'bg-[#d9d2fb] text-[#43339f]',
+          badge: 'bg-[#7c6cf0] text-white',
         }
       : {
           border: 'border-[#bfe6dc]',
           bg: 'bg-[#f0faf7]',
           text: 'text-[#0f766e]',
-          badge: 'bg-[#bfe6dc] text-[#0b5d56]',
+          badge: 'bg-[#14b8a6] text-white',
         };
 
   return (

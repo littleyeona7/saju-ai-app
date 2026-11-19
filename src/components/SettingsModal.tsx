@@ -148,7 +148,7 @@ export function SettingsModal({
               step={0.1}
               value={settings.speechRate}
               onChange={(event) => onChange({ ...settings, speechRate: Number(event.target.value) })}
-              className="flex-1 accent-[#c1912f]"
+              className="range-gold flex-1"
             />
             <span className="w-10 text-right text-[13px] tabular-nums text-ink-muted">
               {settings.speechRate.toFixed(1)}x

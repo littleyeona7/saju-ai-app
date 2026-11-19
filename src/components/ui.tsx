@@ -101,12 +101,12 @@ export function Toggle({
       <span
         className={cn(
           'relative h-6 w-11 shrink-0 rounded-full transition-colors',
-          checked ? 'bg-gold-deep' : 'bg-surface-3 ring-1 ring-inset ring-line-strong',
+          checked ? 'bg-gold-deep' : 'bg-[#dce1e8] ring-1 ring-inset ring-line-strong',
         )}
       >
         <span
           className={cn(
-            'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all',
+            'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow ring-1 ring-line-strong transition-all',
             checked ? 'left-[22px]' : 'left-0.5',
           )}
         />
