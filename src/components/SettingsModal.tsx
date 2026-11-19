@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Settings } from '../types';
-import { MODEL_OPTIONS } from '../constants';
+import { DEFAULT_MODEL, MODEL_OPTIONS } from '../constants';
 import { testConnection } from '../lib/gemini';
 import { GhostButton, Sheet, Toggle, inputClass, selectClass } from './ui';
 import { cn } from '../lib/utils';
@@ -107,12 +107,12 @@ export function SettingsModal({
                 className={cn(inputClass, 'mt-1.5 font-mono text-[13px]')}
                 value={settings.model}
                 onChange={(event) => onChange({ ...settings, model: event.target.value.trim() })}
-                placeholder="예: gemini-2.5-flash"
+                placeholder={`예: ${DEFAULT_MODEL}`}
                 spellCheck={false}
               />
             ) : null}
             <p className="mt-1 text-[10.5px] text-slate-600">
-              기본값은 gemini-2.5-flash입니다. 모델을 찾지 못하면 자동으로 대체 모델을 시도합니다.
+              기본값은 {DEFAULT_MODEL}입니다. 모델을 찾지 못하면 자동으로 대체 모델을 시도합니다.
             </p>
           </div>
 

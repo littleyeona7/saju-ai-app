@@ -40,7 +40,7 @@ AI 상담과 A vs B 비교는 Gemini API를 브라우저에서 직접 호출합�
 2. 빌드 시 환경변수: `VITE_GEMINI_API_KEY=...` (GitHub Actions에서는 `secrets.VITE_GEMINI_API_KEY`)
 
 키는 [Google AI Studio](https://aistudio.google.com/app/apikey)에서 무료로 만들 수 있습니다.
-기본 모델은 `gemini-2.5-flash`이며, 모델을 찾지 못하면 대체 모델로 자동 재시도합니다.
+기본 모델은 `gemini-3.8-flash`이며, 모델이 단종되었거나 찾지 못하면 대체 모델(`gemini-3.6-flash` → `gemini-3.5-flash-lite`)로 자동 재시도하고, 그래도 안 되면 ListModels로 지금 쓸 수 있는 모델을 찾아 시도합니다. 예전 버전에서 저장한 `gemini-2.5-flash` 설정은 불러올 때 자동으로 새 모델로 옮겨집니다.
 
 ## 만세력 검증
 

@@ -79,24 +79,26 @@ async function main() {
 
   const text = await collect({
     apiKey: 'test-key',
-    model: 'gemini-2.5-flash',
+    model: 'gemini-3.8-flash',
     systemInstruction: '시스템 지시',
     contents: [{ role: 'user', parts: [{ text: '안녕' }] }],
   });
   check('스트림 텍스트 결합', text === '안녕하세요. 연우 님의 사주입니다.', text);
-  check('엔드포인트에 모델·sse 포함', capturedUrl.includes('gemini-2.5-flash:streamGenerateContent') && capturedUrl.includes('alt=sse'));
+  check('엔드포인트에 모델·sse 포함', capturedUrl.includes('gemini-3.8-flash:streamGenerateContent') && capturedUrl.includes('alt=sse'));
   check('API 키를 헤더로 전송', JSON.stringify(capturedInit?.headers).includes('test-key'));
   const body = JSON.parse(String(capturedInit?.body));
   check('systemInstruction 포함', body.systemInstruction?.parts?.[0]?.text === '시스템 지시');
   check('contents role 매핑', body.contents?.[0]?.role === 'user');
-  check('thinkingBudget 0 (flash)', body.generationConfig?.thinkingConfig?.thinkingBudget === 0);
+  check('thinkingLevel low (flash)', body.generationConfig?.thinkingConfig?.thinkingLevel === 'low');
+  check('출력 한도 8192 (사고 토큰 여유)', body.generationConfig?.maxOutputTokens === 8192);
+  check('3.x에는 temperature 미전송', body.generationConfig?.temperature === undefined);
 
   console.log('\n[2] API 키 오류 메시지');
   globalThis.setFetch((async () =>
     jsonResponse(400, { error: { code: 400, message: 'API key not valid. Please pass a valid API key.', status: 'INVALID_ARGUMENT' } })) as typeof fetch);
   let keyError: unknown = null;
   try {
-    await collect({ apiKey: 'bad', model: 'gemini-2.5-flash', contents: [{ role: 'user', parts: [{ text: 'x' }] }] });
+    await collect({ apiKey: 'bad', model: 'gemini-3.8-flash', contents: [{ role: 'user', parts: [{ text: 'x' }] }] });
   } catch (error) {
     keyError = error;
   }
@@ -111,7 +113,7 @@ async function main() {
     const match = url.match(/models\/([^:]+):/);
     const model = match ? decodeURIComponent(match[1]) : '';
     models.push(model);
-    if (model === 'gemini-2.5-flash') {
+    if (model === 'gemini-3.8-flash') {
       return jsonResponse(404, { error: { code: 404, message: 'model not found' } });
     }
     return sseResponse([{ text: '대체 모델 응답' }, { finishReason: 'STOP' }]);
@@ -121,7 +123,7 @@ async function main() {
   let fallbackText = '';
   for await (const chunk of streamGemini({
     apiKey: 'k',
-    model: 'gemini-2.5-flash',
+    model: 'gemini-3.8-flash',
     contents: [{ role: 'user', parts: [{ text: 'x' }] }],
     onModelUsed: (model) => {
       usedModel = model;
@@ -129,16 +131,102 @@ async function main() {
   })) {
     fallbackText += chunk;
   }
-  check('404 후 다음 모델로 재시도', models.length === 2 && models[1] === 'gemini-2.5-flash-lite', models.join(','));
+  check('404 후 다음 모델로 재시도', models.length === 2 && models[1] === 'gemini-3.6-flash', models.join(','));
   check('대체 모델의 답변 수신', fallbackText === '대체 모델 응답');
-  check('사용한 모델 보고', usedModel === 'gemini-2.5-flash-lite', usedModel);
+  check('사용한 모델 보고', usedModel === 'gemini-3.6-flash', usedModel);
+
+  console.log('\n[3-1] 400 "no longer available" 도 대체 모델로 넘어간다');
+  const retiredModels: string[] = [];
+  globalThis.setFetch((async (input: RequestInfo | URL) => {
+    const url = String(input);
+    const match = url.match(/models\/([^:]+):/);
+    const model = match ? decodeURIComponent(match[1]) : '';
+    retiredModels.push(model);
+    if (model === 'gemini-3.8-flash') {
+      return jsonResponse(400, {
+        error: {
+          code: 400,
+          message: 'This model models/gemini-3.8-flash is no longer available. Please update your code to use models/gemini-3.6-flash.',
+          status: 'INVALID_ARGUMENT',
+        },
+      });
+    }
+    return sseResponse([{ text: '단종 안내 후 대체 응답' }, { finishReason: 'STOP' }]);
+  }) as typeof fetch);
+
+  let retiredText = '';
+  for await (const chunk of streamGemini({
+    apiKey: 'k',
+    model: 'gemini-3.8-flash',
+    contents: [{ role: 'user', parts: [{ text: 'x' }] }],
+  })) {
+    retiredText += chunk;
+  }
+  check('단종(400) 후 대체 모델 재시도', retiredModels.length === 2 && retiredModels[1] === 'gemini-3.6-flash', retiredModels.join(','));
+  check('대체 모델 답변 수신', retiredText === '단종 안내 후 대체 응답', retiredText);
+
+  console.log('\n[3-2] thinkingLevel 거부(400) 시 thinkingConfig 없이 재시도');
+  const thinkingBodies: Record<string, unknown>[] = [];
+  globalThis.setFetch((async (_input: RequestInfo | URL, init?: RequestInit) => {
+    const body = JSON.parse(String(init?.body ?? '{}')) as { generationConfig?: Record<string, unknown> };
+    thinkingBodies.push(body.generationConfig ?? {});
+    if (body.generationConfig?.thinkingConfig) {
+      return jsonResponse(400, { error: { code: 400, message: 'thinking_level is not supported for this model', status: 'INVALID_ARGUMENT' } });
+    }
+    return sseResponse([{ text: 'thinking 없이 응답' }, { finishReason: 'STOP' }]);
+  }) as typeof fetch);
+
+  let noThinkingText = '';
+  for await (const chunk of streamGemini({
+    apiKey: 'k',
+    model: 'gemini-3.8-flash',
+    contents: [{ role: 'user', parts: [{ text: 'x' }] }],
+  })) {
+    noThinkingText += chunk;
+  }
+  check('thinkingConfig 포함 → 거부 → 제외 재시도', thinkingBodies.length === 2 && Boolean(thinkingBodies[0].thinkingConfig) && !thinkingBodies[1].thinkingConfig);
+  check('thinking 제외 후 답변 수신', noThinkingText === 'thinking 없이 응답', noThinkingText);
+
+  console.log('\n[3-3] 정적 목록이 모두 실패하면 ListModels로 찾은 모델 사용');
+  const listed: string[] = [];
+  globalThis.setFetch((async (input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes('/models?')) {
+      return jsonResponse(200, {
+        models: [
+          { name: 'models/gemini-3.9-flash', supportedGenerationMethods: ['generateContent'] },
+          { name: 'models/gemini-4-carbon', supportedGenerationMethods: ['generateContent'] },
+          { name: 'models/gemini-3.8-flash-tts', supportedGenerationMethods: ['generateContent'] },
+          { name: 'models/gemini-3.8-flash', supportedGenerationMethods: [] },
+        ],
+      });
+    }
+    const match = url.match(/models\/([^:]+):/);
+    const model = match ? decodeURIComponent(match[1]) : '';
+    listed.push(model);
+    if (['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'].includes(model)) {
+      return jsonResponse(404, { error: { code: 404, message: 'model not found' } });
+    }
+    return sseResponse([{ text: `발견한 모델(${model}) 응답` }, { finishReason: 'STOP' }]);
+  }) as typeof fetch);
+
+  let discoveredText = '';
+  for await (const chunk of streamGemini({
+    apiKey: 'k',
+    model: 'gemini-3.8-flash',
+    contents: [{ role: 'user', parts: [{ text: 'x' }] }],
+  })) {
+    discoveredText += chunk;
+  }
+  check('정적 3개 실패 후 ListModels 호출', listed.length === 4, listed.join(','));
+  check('TTS·비지원 모델은 건너뛰고 최신 Flash 선택', discoveredText === '발견한 모델(gemini-3.9-flash) 응답', discoveredText);
 
   console.log('\n[4] 429 한도 초과');
   globalThis.setFetch((async () =>
     jsonResponse(429, { error: { code: 429, message: 'Resource has been exhausted', status: 'RESOURCE_EXHAUSTED' } })) as typeof fetch);
   let rateError: unknown = null;
   try {
-    await collect({ apiKey: 'k', model: 'gemini-2.5-flash', contents: [{ role: 'user', parts: [{ text: 'x' }] }] });
+    await collect({ apiKey: 'k', model: 'gemini-3.8-flash', contents: [{ role: 'user', parts: [{ text: 'x' }] }] });
   } catch (error) {
     rateError = error;
   }

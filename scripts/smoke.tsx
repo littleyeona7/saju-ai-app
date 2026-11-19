@@ -10,6 +10,7 @@ import { ChoiceTab } from '../src/components/ChoiceTab';
 import { SajuTab } from '../src/components/SajuTab';
 import { SettingsModal } from '../src/components/SettingsModal';
 import { buildChart } from '../src/lib/saju';
+import { loadSettings } from '../src/lib/storage';
 import type { Profile, Settings } from '../src/types';
 
 // --- 브라우저 최소 스텁 ---
@@ -68,7 +69,7 @@ const profile: Profile = {
 };
 
 const chart = buildChart(profile.birth);
-const settings: Settings = { apiKey: '', model: 'gemini-2.5-flash', autoRead: false, speechRate: 1 };
+const settings: Settings = { apiKey: '', model: 'gemini-3.8-flash', autoRead: false, speechRate: 1 };
 
 console.log('\n[1] 초기 상태 — 빈 온보딩');
 store.clear();
@@ -154,10 +155,20 @@ const settingsHtml = render(
   }),
 );
 check('API 키 항목', settingsHtml.includes('Gemini API 키'));
-check('모델 선택', settingsHtml.includes('gemini-2.5-flash'));
+check('모델 선택', settingsHtml.includes('gemini-3.8-flash'));
+check('단종 2.5 모델 안내 없음', !settingsHtml.includes('gemini-2.5-flash'));
 check('음성 설정', settingsHtml.includes('음성'));
 
-console.log('\n[6] 프로필 10개 상한');
+console.log('\n[6] 예전에 저장한 단종 모델은 자동 이전');
+store.clear();
+store.set('saju.settings.v1', JSON.stringify({ apiKey: 'k', model: 'gemini-2.5-flash', autoRead: false, speechRate: 1 }));
+check('gemini-2.5-flash → gemini-3.8-flash', loadSettings().model === 'gemini-3.8-flash', loadSettings().model);
+store.set('saju.settings.v1', JSON.stringify({ apiKey: 'k', model: 'gemini-2.5-flash-lite', autoRead: false, speechRate: 1 }));
+check('gemini-2.5-flash-lite → gemini-3.5-flash-lite', loadSettings().model === 'gemini-3.5-flash-lite', loadSettings().model);
+store.set('saju.settings.v1', JSON.stringify({ apiKey: 'k', model: 'gemini-3.6-flash', autoRead: false, speechRate: 1 }));
+check('직접 고른 모델은 그대로', loadSettings().model === 'gemini-3.6-flash', loadSettings().model);
+
+console.log('\n[7] 프로필 10개 상한');
 store.clear();
 const many = Array.from({ length: 12 }, (_, i) => ({ ...profile, id: `p-${i}`, birth: { ...profile.birth, name: `사람${i}` } }));
 store.set('saju.profiles.v1', JSON.stringify(many));

@@ -1,7 +1,8 @@
 /**
  * Gemini API 스트리밍 클라이언트 (브라우저에서 직접 호출).
  * - generateContentStream(alt=sse) 로 토큰을 받아 그대로 흘려보낸다.
- * - 모델을 찾지 못하면(404) 대체 모델로 자동 재시도한다.
+ * - 모델을 찾지 못하면(404 · no longer available) 대체 모델로 자동 재시도하고,
+ *   정적 목록이 모두 실패하면 ListModels로 지금 쓸 수 있는 모델을 찾아 한 번 더 시도한다.
  */
 import { MODEL_FALLBACKS } from '../constants';
 
@@ -37,21 +38,38 @@ function endpoint(model: string): string {
   return `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`;
 }
 
-function bodyFor(options: StreamOptions) {
+/**
+ * Gemini 3.x 부터는 정수 thinkingBudget 대신 thinkingLevel(LOW/MEDIUM/HIGH)을 쓴다.
+ * 채팅 답변은 첫 문장이 빨리 나오는 편이 좋아 Flash 계열은 'low', Pro 계열은 'medium'.
+ * Gemini 3 이전 모델(직접 입력한 경우)은 null → thinkingConfig를 보내지 않는다.
+ */
+function thinkingLevelFor(model: string): 'low' | 'medium' | 'high' | null {
+  if (!/^gemini-[3-9]/.test(model)) return null;
+  if (/-pro/.test(model)) return 'medium';
+  return 'low';
+}
+
+function bodyFor(options: StreamOptions, withThinking: boolean) {
+  const level = thinkingLevelFor(options.model);
+  const generationConfig: Record<string, unknown> = {
+    // 3.x는 사고 토큰이 출력 한도에 함께 계산되므로 여유를 둔다.
+    maxOutputTokens: options.maxOutputTokens ?? 8192,
+  };
+
+  if (level) {
+    if (withThinking) generationConfig.thinkingConfig = { thinkingLevel: level };
+  } else {
+    // Gemini 3 이전 모델: 기존 샘플링 설정 유지 (3.x에서는 서버가 무시한다)
+    generationConfig.temperature = options.temperature ?? 0.95;
+    generationConfig.topP = 0.95;
+  }
+
   const body: Record<string, unknown> = {
     contents: options.contents,
-    generationConfig: {
-      temperature: options.temperature ?? 0.95,
-      maxOutputTokens: options.maxOutputTokens ?? 2400,
-      topP: 0.95,
-    },
+    generationConfig,
   };
   if (options.systemInstruction) {
     body.systemInstruction = { parts: [{ text: options.systemInstruction }] };
-  }
-  // gemini-2.5-flash 는 사고 토큰을 0으로 두어 첫 문장이 빨리 나오게 한다.
-  if (options.model === 'gemini-2.5-flash') {
-    (body.generationConfig as Record<string, unknown>).thinkingConfig = { thinkingBudget: 0 };
   }
   return JSON.stringify(body);
 }
@@ -96,7 +114,22 @@ async function toError(res: Response): Promise<GeminiError> {
   return new GeminiError(message || `요청이 실패했습니다 (${res.status}).`, res.status);
 }
 
-async function* streamOnce(options: StreamOptions): AsyncGenerator<string, void, unknown> {
+/** 이 모델로는 계속할 수 없어 다른 모델로 넘어가야 하는 오류인지. */
+function isModelUnavailable(error: unknown): boolean {
+  if (!(error instanceof GeminiError)) return false;
+  if (error.status === 404) return true;
+  if (error.status !== 400 && error.status !== 403) return false;
+  return /no longer available|not found|does not exist|not supported|unsupported model|deprecated|decommission/i.test(
+    error.message,
+  );
+}
+
+/** thinkingLevel을 받지 않는 모델(400)이면 thinkingConfig 없이 다시 시도한다. */
+function isThinkingRejected(error: unknown): boolean {
+  return error instanceof GeminiError && error.status === 400 && /thinking/i.test(error.message);
+}
+
+async function* streamOnce(options: StreamOptions, withThinking: boolean): AsyncGenerator<string, void, unknown> {
   let res: Response;
   try {
     res = await fetch(endpoint(options.model), {
@@ -105,7 +138,7 @@ async function* streamOnce(options: StreamOptions): AsyncGenerator<string, void,
         'Content-Type': 'application/json',
         'x-goog-api-key': options.apiKey,
       },
-      body: bodyFor(options),
+      body: bodyFor(options, withThinking),
       signal: options.signal,
     });
   } catch (error) {
@@ -177,14 +210,68 @@ async function* streamOnce(options: StreamOptions): AsyncGenerator<string, void,
   }
 }
 
-/** 모델 404 시 대체 모델로 넘어가며 스트리밍한다. */
-export async function* streamGemini(options: StreamOptions): AsyncGenerator<string, void, unknown> {
-  const candidates = [options.model, ...MODEL_FALLBACKS.filter((m) => m !== options.model)];
-  let lastError: unknown = null;
+/** 한 모델로 스트리밍하되, thinkingConfig가 거부되면 빼고 한 번 더 시도한다. */
+async function* streamModel(options: StreamOptions): AsyncGenerator<string, void, unknown> {
+  const withThinking = thinkingLevelFor(options.model) !== null;
+  if (!withThinking) {
+    yield* streamOnce(options, false);
+    return;
+  }
+  try {
+    yield* streamOnce(options, true);
+  } catch (error) {
+    if ((error as Error).name === 'AbortError') throw error;
+    if (!isThinkingRejected(error)) throw error;
+    yield* streamOnce(options, false);
+  }
+}
 
-  for (const model of candidates) {
+/**
+ * ListModels로 지금 이 키로 쓸 수 있는 텍스트 모델 중 가장 최신 것을 찾는다.
+ * (새 모델이 나오거나 기존 모델이 단종돼도 앱을 고치지 않고 버티기 위한 마지막 수단)
+ */
+export async function discoverModel(apiKey: string): Promise<string | null> {
+  const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', {
+    headers: { 'x-goog-api-key': apiKey },
+  });
+  if (!res.ok) return null;
+
+  const json = (await res.json()) as {
+    models?: { name?: string; supportedGenerationMethods?: string[] }[];
+  };
+
+  const names = (json.models ?? [])
+    .filter((model) => model.supportedGenerationMethods?.includes('generateContent'))
+    .map((model) => (model.name ?? '').replace(/^models\//, ''))
+    .filter((name) => /^gemini-\d/.test(name))
+    // 이미지·음성·임베딩 계열은 텍스트 상담에 쓰지 않는다.
+    .filter((name) => !/(image|tts|live|audio|embedding|transcribe|omni|nano)/.test(name));
+
+  if (!names.length) return null;
+
+  // 이 앱은 빠른 채팅이 우선이므로 Flash 계열을 가장 앞세우고, 그 안에서 최신 버전을 고른다.
+  const score = (name: string) => {
+    const match = name.match(/^gemini-(\d+)(?:\.(\d+))?/);
+    const major = match ? Number(match[1]) : 0;
+    const minor = match && match[2] ? Number(match[2]) : 0;
+    const flash = /-flash/.test(name) ? 1 : 0;
+    const preview = /preview|exp/.test(name) ? -1 : 0;
+    return flash * 1e9 + major * 1e6 + minor * 1e4 + preview * 1e3;
+  };
+
+  return [...names].sort((a, b) => score(b) - score(a))[0] ?? null;
+}
+
+/** 모델을 찾지 못하면 대체 모델로 넘어가며 스트리밍한다. */
+export async function* streamGemini(options: StreamOptions): AsyncGenerator<string, void, unknown> {
+  const candidates = [options.model, ...MODEL_FALLBACKS.filter((model) => model !== options.model)];
+  let lastError: unknown = null;
+  let discoveryTried = false;
+
+  for (let index = 0; index < candidates.length; index += 1) {
+    const model = candidates[index];
     try {
-      const iterator = streamOnce({ ...options, model });
+      const iterator = streamModel({ ...options, model });
       const first = await iterator.next();
       options.onModelUsed?.(model);
       if (first.done) return;
@@ -197,9 +284,14 @@ export async function* streamGemini(options: StreamOptions): AsyncGenerator<stri
     } catch (error) {
       if ((error as Error).name === 'AbortError') throw error;
       lastError = error;
-      const isModelMissing = error instanceof GeminiError && error.status === 404;
-      if (!isModelMissing) throw error;
-      // 다음 대체 모델 시도
+      if (!isModelUnavailable(error)) throw error;
+
+      // 정적 목록을 다 썼다면, 지금 쓸 수 있는 모델을 한 번 찾아서 시도한다.
+      if (index === candidates.length - 1 && !discoveryTried) {
+        discoveryTried = true;
+        const discovered = await discoverModel(options.apiKey).catch(() => null);
+        if (discovered && !candidates.includes(discovered)) candidates.push(discovered);
+      }
     }
   }
 

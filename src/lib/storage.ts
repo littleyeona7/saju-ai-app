@@ -1,5 +1,5 @@
 import type { Profile, Settings } from '../types';
-import { MAX_PROFILES } from '../constants';
+import { DEFAULT_MODEL, MAX_PROFILES, migrateModel } from '../constants';
 
 const PROFILES_KEY = 'saju.profiles.v1';
 const ACTIVE_KEY = 'saju.activeProfile.v1';
@@ -50,7 +50,7 @@ export function defaultSettings(): Settings {
   const envKey = env?.VITE_GEMINI_API_KEY ?? '';
   return {
     apiKey: envKey,
-    model: 'gemini-2.5-flash',
+    model: DEFAULT_MODEL,
     autoRead: false,
     speechRate: 1,
   };
@@ -62,7 +62,8 @@ export function loadSettings(): Settings {
   if (!parsed) return base;
   return {
     apiKey: typeof parsed.apiKey === 'string' ? parsed.apiKey : base.apiKey,
-    model: typeof parsed.model === 'string' && parsed.model ? parsed.model : base.model,
+    // 예전에 저장한 단종 모델(gemini-2.5-flash 등)은 지금 쓸 수 있는 모델로 옮긴다.
+    model: migrateModel(typeof parsed.model === 'string' && parsed.model ? parsed.model : base.model),
     autoRead: Boolean(parsed.autoRead),
     speechRate: typeof parsed.speechRate === 'number' ? parsed.speechRate : base.speechRate,
   };
