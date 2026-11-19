@@ -10,7 +10,8 @@
     "verify": "tsx scripts/verify.ts",
     "smoke": "tsx --tsconfig tsconfig.app.json scripts/smoke.tsx",
     "test:ai": "tsx --tsconfig tsconfig.app.json scripts/stream-test.ts",
-    "check": "npm run verify && npm run smoke && npm run test:ai && npm run build"
+    "check": "npm run verify && npm run smoke && npm run test:ai && npm run test:memory && npm run build",
+    "test:memory": "tsx --tsconfig tsconfig.app.json scripts/memory-test.ts"
   },
   "dependencies": {
     "lunar-javascript": "^1.7.7",

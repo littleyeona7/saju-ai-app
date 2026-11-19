@@ -32,10 +32,23 @@ export interface MarriageInfo {
   partnerManual: PartnerBirth | null;
 }
 
+/**
+ * AI 상담에서 앱이 배운 사실 한 줄.
+ * (결혼 연도, 직장·업무 맥락, 건강·생활 습관, 어떤 해석이 맞았는지 같은 실제 피드백)
+ */
+export interface ProfileNote {
+  id: string;
+  text: string;
+  /** ISO 8601 문자열 */
+  createdAt: string;
+}
+
 export interface Profile {
   id: string;
   birth: BirthInput;
   marriage: MarriageInfo;
+  /** 상담 피드백 자동 기억 (최신이 뒤) */
+  notes?: ProfileNote[];
   createdAt: number;
   updatedAt: number;
 }

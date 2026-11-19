@@ -12,7 +12,8 @@ interface Options {
   apiKey: string;
   model: string;
   systemInstruction: string;
-  onDone?: (text: string, messageId: string) => void;
+  /** 답변이 끝나면 불린다. prompt는 이번에 보낸 사용자 문장이다. */
+  onDone?: (text: string, messageId: string, prompt: string) => void;
 }
 
 export function useGeminiChat({ apiKey, model, systemInstruction, onDone }: Options) {
@@ -48,11 +49,13 @@ export function useGeminiChat({ apiKey, model, systemInstruction, onDone }: Opti
     setStreaming(false);
   }, []);
 
-  const send = useCallback(async (text: string) => {
+  const send = useCallback(async (text: string, systemOverride?: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
 
     const { apiKey: key, model: modelName, systemInstruction: system } = optionsRef.current;
+    // 이번 질문 주제에 맞춰 다시 만든 시스템 프롬프트(기억·주제 기준)를 우선 쓴다.
+    const systemUsed = systemOverride ?? system;
     if (!key) {
       setError({
         message: 'Gemini API 키가 없습니다.',
@@ -83,7 +86,7 @@ export function useGeminiChat({ apiKey, model, systemInstruction, onDone }: Opti
       for await (const chunk of streamGemini({
         apiKey: key,
         model: modelName,
-        systemInstruction: system,
+        systemInstruction: systemUsed,
         contents,
         signal: controller.signal,
         onModelUsed: setModelUsed,
@@ -106,7 +109,7 @@ export function useGeminiChat({ apiKey, model, systemInstruction, onDone }: Opti
           return updated;
         });
       } else {
-        optionsRef.current.onDone?.(acc, assistantId);
+        optionsRef.current.onDone?.(acc, assistantId, trimmed);
       }
     } catch (err) {
       if ((err as Error).name === 'AbortError') {

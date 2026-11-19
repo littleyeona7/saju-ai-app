@@ -12,6 +12,7 @@ import { ElementSummary } from './ElementSummary';
 import { DaewunStrip } from './DaewunStrip';
 import { MarriageCard } from './MarriageCard';
 import { ProfileShelf } from './ProfileShelf';
+import { MemoryList } from './MemoryPanel';
 import { Card, Chip, Icon, SectionTitle } from './ui';
 import { MAX_PROFILES } from '../constants';
 
@@ -34,6 +35,7 @@ export function SajuTab({
   onMarriageChange,
   onOpenChat,
   onOpenChoice,
+  onDeleteNote,
 }: {
   profile: Profile;
   chart: Chart;
@@ -45,6 +47,7 @@ export function SajuTab({
   onMarriageChange: (marriage: MarriageInfo) => void;
   onOpenChat: () => void;
   onOpenChoice: () => void;
+  onDeleteNote: (noteId: string) => void;
 }) {
   const displayName = profile.birth.name || '나';
 
@@ -157,6 +160,25 @@ export function SajuTab({
       <Card>
         <SectionTitle title="결혼 · 배우자" hint="AI가 가정과 인연을 함께 읽도록 연결해 두세요" />
         <MarriageCard profile={profile} profiles={profiles} onChange={onMarriageChange} />
+      </Card>
+
+      {/* AI가 기억한 것 */}
+      <Card>
+        <SectionTitle
+          title="AI가 기억한 것"
+          hint="상담에서 배운 사실이 다음 답변에 자동으로 반영됩니다"
+          right={profile.notes?.length ? <Chip tone="gold">🧠 {profile.notes.length}건</Chip> : undefined}
+        />
+        <MemoryList
+          notes={profile.notes}
+          onDelete={onDeleteNote}
+          emptyHint="아직 배운 내용이 없어요. AI 상담에서 결혼·일·건강 같은 실제 이야기를 나누면 여기에 하나씩 쌓여요."
+        />
+        {profile.notes?.length ? (
+          <p className="mt-2.5 text-[12px] leading-relaxed text-ink-faint">
+            지운 기억은 다음 답변부터 쓰지 않아요. 이 기기에만 저장됩니다.
+          </p>
+        ) : null}
       </Card>
 
       {/* 프로필 */}

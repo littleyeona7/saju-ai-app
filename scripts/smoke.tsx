@@ -9,6 +9,7 @@ import { ChatTab } from '../src/components/ChatTab';
 import { ChoiceTab } from '../src/components/ChoiceTab';
 import { SajuTab } from '../src/components/SajuTab';
 import { SettingsModal } from '../src/components/SettingsModal';
+import { MemoryList } from '../src/components/MemoryPanel';
 import { buildChart } from '../src/lib/saju';
 import { loadSettings } from '../src/lib/storage';
 import type { Profile, Settings } from '../src/types';
@@ -95,6 +96,8 @@ check('대운 표시', sajuHtml.includes('대운'));
 check('결혼·배우자 카드', sajuHtml.includes('배우자'));
 check('프로필 이름', sajuHtml.includes('최연우'));
 check('저장된 프로필 1/10 표시', sajuHtml.includes('1/10'));
+check('내 사주에 기억 카드', sajuHtml.includes('AI가 기억한 것'));
+check('기억이 없으면 카드에 안내 문구', sajuHtml.includes('아직 배운 내용이 없어요'));
 
 // 19:35 (술시) 사주가 그리드에 그대로 나오는지
 const evening = buildChart({ ...profile.birth, hour: 19, minute: 35 });
@@ -110,6 +113,7 @@ const eveningHtml = render(
     onMarriageChange: () => {},
     onOpenChat: () => {},
     onOpenChoice: () => {},
+    onDeleteNote: () => {},
   }),
 );
 check(
@@ -118,6 +122,20 @@ check(
 );
 check('19:35 → 오행 토5', evening.elementCounts.earth === 5);
 check('시각 표기', eveningHtml.includes('19:35'));
+
+console.log('\n[2-1] 저장된 기억이 내 사주 카드에 보인다');
+store.clear();
+store.set(
+  'saju.profiles.v1',
+  JSON.stringify([
+    { ...profile, notes: [{ id: 'a', text: '2027년 이직을 준비하고 있다.', createdAt: '2026-11-02T09:00:00.000Z' }] },
+  ]),
+);
+store.set('saju.activeProfile.v1', profile.id);
+const memorySajuHtml = render(createElement(App));
+check('저장된 기억이 렌더된다', memorySajuHtml.includes('2027년 이직을 준비하고 있다.'));
+check('기억 개수 배지', memorySajuHtml.includes('🧠 1건') || memorySajuHtml.includes('1건'));
+check('기억 삭제 버튼이 있다', memorySajuHtml.includes('기억 삭제'));
 
 console.log('\n[3] AI 상담 화면');
 const chatHtml = render(
@@ -128,12 +146,45 @@ const chatHtml = render(
     settings,
     onOpenSettings: () => {},
     onToggleAutoRead: () => {},
+    onAddNotes: () => {},
+    onDeleteNote: () => {},
   }),
 );
 check('상담 헤더', chatHtml.includes('AI 사주 상담'));
 check('빈 상태 인사', chatHtml.includes('안녕하세요'));
 check('API 키 안내', chatHtml.includes('Gemini API 키가 필요해요'));
 check('입력창', chatHtml.includes('textarea'));
+check('기억 배지 (0건)', chatHtml.includes('기억 0건'), chatHtml.includes('기억') ? '' : '배지 없음');
+
+const notes = [
+  { id: 'n1', text: '2015년 5월에 결혼했고 배우자와 함께 산다.', createdAt: '2026-11-01T09:00:00.000Z' },
+  { id: 'n2', text: '회계법인에서 12년째 일하고 있고 2027년 이직을 준비한다.', createdAt: '2026-11-02T09:00:00.000Z' },
+];
+const memoryProfile: Profile = { ...profile, notes };
+const memoryChatHtml = render(
+  createElement(ChatTab, {
+    profile: memoryProfile,
+    chart,
+    partner: null,
+    settings,
+    onOpenSettings: () => {},
+    onToggleAutoRead: () => {},
+    onAddNotes: () => {},
+    onDeleteNote: () => {},
+  }),
+);
+check('기억 배지에 개수', memoryChatHtml.includes('기억 2건'));
+check('빈 상태에 기억 요약 카드', memoryChatHtml.includes('지난 상담에서 기억한 것 2건'));
+check('기억 서랍은 닫혀 있으면 그리지 않는다', !memoryChatHtml.includes('AI가 기억한 것'));
+
+const memoryListHtml = render(
+  createElement(MemoryList, { notes, onDelete: () => {}, emptyHint: '아직 없어요' }),
+);
+check('기억 목록에 문장이 보인다', memoryListHtml.includes('회계법인에서 12년째'));
+check('기억마다 삭제 버튼', (memoryListHtml.match(/기억 삭제/g) ?? []).length === 2);
+check('기억 날짜 표시', memoryListHtml.includes('2026.11.02'));
+const emptyMemoryHtml = render(createElement(MemoryList, { notes: [], onDelete: () => {}, emptyHint: '아직 없어요' }));
+check('기억이 없으면 안내 문구', emptyMemoryHtml.includes('아직 없어요') && !emptyMemoryHtml.includes('기억 삭제'));
 
 console.log('\n[4] A vs B 시뮬레이터');
 const choiceHtml = render(createElement(ChoiceTab, { profile, chart, partner: null, settings }));
